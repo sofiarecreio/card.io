@@ -85,7 +85,7 @@ function TeamDashboard() {
       <div className="grid gap-5 lg:grid-cols-12">
         <BiCard className="lg:col-span-8" title="Evolução da coorte por perfil de risco" subtitle="Últimos 12 meses · Internações sobrepostas">
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={cohortTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <ComposedChart data={cohortTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
@@ -95,7 +95,7 @@ function TeamDashboard() {
               <Bar dataKey="moderado" stackId="a" name="Moderado" fill="var(--warning)" />
               <Bar dataKey="alto" stackId="a" name="Alto" fill="var(--danger)" radius={[4, 4, 0, 0]} />
               <Line type="monotone" dataKey="internacoes" name="Internações" stroke="var(--info)" strokeWidth={2.5} />
-            </BarChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </BiCard>
 
