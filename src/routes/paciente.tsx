@@ -22,7 +22,7 @@ import { Heart, HeartPulse, Activity, Smile, AlertTriangle, CheckCircle2, Sparkl
 export const Route = createFileRoute("/paciente")({
   head: () => ({
     meta: [
-      { title: "Minha Evolução · CardioFlow" },
+      { title: "Minha Evolução · Card.io" },
       { name: "description", content: "Acompanhe sua frequência cardíaca, autocuidado, hábitos e percepção de sintomas." },
     ],
   }),

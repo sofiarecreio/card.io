@@ -15,7 +15,7 @@ export function AppShell({ children, profile }: { children: ReactNode; profile: 
               <Heart className="h-4.5 w-4.5 text-primary-foreground" fill="currentColor" />
             </div>
             <div className="leading-tight">
-              <div className="font-display text-base font-semibold tracking-tight">CardioFlow</div>
+              <div className="font-display text-base font-semibold tracking-tight">Card.io</div>
               <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Insuf. Cardíaca · BI</div>
             </div>
           </Link>
@@ -56,7 +56,7 @@ export function AppShell({ children, profile }: { children: ReactNode; profile: 
         <div className="mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-2 px-4 text-xs text-muted-foreground md:flex-row md:px-8">
           <div className="flex items-center gap-2">
             <LayoutDashboard className="h-3.5 w-3.5" />
-            CardioFlow BI · Mockup demonstrativo · Dados sintéticos
+            Card.io BI · Mockup demonstrativo · Dados sintéticos
           </div>
           <div>v1.0 · {new Date().getFullYear()}</div>
         </div>

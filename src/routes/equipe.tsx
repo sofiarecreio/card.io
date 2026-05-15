@@ -43,7 +43,7 @@ import {
 export const Route = createFileRoute("/equipe")({
   head: () => ({
     meta: [
-      { title: "Dashboard Clínico · CardioFlow" },
+      { title: "Dashboard Clínico · Card.io" },
       { name: "description", content: "KPIs e monitoramento de coortes de pacientes com insuficiência cardíaca." },
     ],
   }),

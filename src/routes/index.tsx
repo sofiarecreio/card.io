@@ -4,7 +4,7 @@ import { Activity, ArrowRight, Heart, Stethoscope, ShieldAlert, LineChart } from
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CardioFlow BI · Monitoramento de Insuficiência Cardíaca" },
+      { title: "Card.io BI · Monitoramento de Insuficiência Cardíaca" },
       { name: "description", content: "Plataforma de Business Intelligence para monitoramento contínuo de pacientes com insuficiência cardíaca." },
     ],
   }),
@@ -21,7 +21,7 @@ function Landing() {
               <Heart className="h-4.5 w-4.5 text-primary-foreground" fill="currentColor" />
             </div>
             <div className="leading-tight">
-              <div className="font-display text-base font-semibold tracking-tight">CardioFlow</div>
+              <div className="font-display text-base font-semibold tracking-tight">Card.io</div>
               <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Insuf. Cardíaca · BI</div>
             </div>
           </div>
