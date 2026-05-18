@@ -69,6 +69,11 @@ const tooltipStyle = {
 };
 
 function TeamDashboard() {
+  const [activeForm, setActiveForm] = useState<ClinicalForm | null>(null);
+  const [activePatient, setActivePatient] = useState<string>("P-1042");
+  const forms = patientForms[activePatient] ?? patientForms["P-1042"];
+  const patient = patients.find((p) => p.id === activePatient) ?? patients[0];
+
   return (
     <AppShell profile="team">
       {/* Title + filters */}
