@@ -100,3 +100,181 @@ export const examTypes = [
   { type: "VO2 máx", count: 54, abnormal: 14 },
   { type: "BNP/NT-proBNP", count: 188, abnormal: 56 },
 ];
+
+// ============== Clinical forms (REDCap-style) ==============
+
+export type FormField = { label: string; value: string; flag?: "ok" | "warn" | "alert" };
+export type FormSection = { title: string; fields: FormField[] };
+export type ClinicalForm = {
+  key: string;
+  name: string;
+  short: string;
+  updated: string;
+  status: "completo" | "parcial" | "pendente";
+  sections: FormSection[];
+};
+
+export const patientForms: Record<string, ClinicalForm[]> = {
+  "P-1042": [
+    {
+      key: "identificacao", name: "Identificação", short: "Dados sociodemográficos",
+      updated: "12/04/2026", status: "completo",
+      sections: [{
+        title: "Dados pessoais",
+        fields: [
+          { label: "Record ID", value: "ICFEp-0042-1204-2026" },
+          { label: "Data da avaliação", value: "12/04/2026" },
+          { label: "Data de nascimento", value: "03/05/1959 (67 anos)" },
+          { label: "Sexo", value: "Feminino" },
+          { label: "Etnia", value: "Parda" },
+          { label: "Escolaridade", value: "Nível fundamental completo" },
+          { label: "Religião", value: "Católica" },
+          { label: "Renda familiar", value: "R$ 2.400,00" },
+        ],
+      }],
+    },
+    {
+      key: "anamnese", name: "Anamnese", short: "HDA, HDP, fatores de risco",
+      updated: "12/04/2026", status: "completo",
+      sections: [
+        { title: "Sintomas", fields: [
+          { label: "Dor torácica", value: "Não" },
+          { label: "Dispneia", value: "Sim", flag: "alert" },
+          { label: "Ortopneia", value: "Sim", flag: "alert" },
+          { label: "D.P.N.", value: "Sim", flag: "alert" },
+          { label: "Tontura", value: "Não" },
+          { label: "Síncope", value: "Não" },
+          { label: "Palpitação", value: "Sim", flag: "warn" },
+          { label: "Edema", value: "Sim", flag: "alert" },
+          { label: "Claudicação", value: "Não" },
+        ]},
+        { title: "Fatores de risco", fields: [
+          { label: "Tabagismo", value: "Ex-fumante (>10 anos)" },
+          { label: "Álcool", value: "1 vez por mês" },
+        ]},
+        { title: "HDP", fields: [
+          { label: "Diabetes", value: "Sim", flag: "warn" },
+          { label: "Hipertensão", value: "Sim", flag: "warn" },
+          { label: "Obesidade", value: "Não" },
+          { label: "Dislipidemia", value: "Sim", flag: "warn" },
+          { label: "IAM prévio", value: "Sim", flag: "alert" },
+          { label: "AVE", value: "Não" },
+          { label: "Internação <12m", value: "Sim", flag: "alert" },
+          { label: "Medicamentos", value: "Furosemida 40mg, Carvedilol 25mg, Losartana 50mg, Espironolactona 25mg" },
+        ]},
+      ],
+    },
+    {
+      key: "framingham", name: "Critérios de Framingham", short: "Diagnóstico clínico de IC",
+      updated: "12/04/2026", status: "completo",
+      sections: [
+        { title: "Critérios maiores (5 positivos)", fields: [
+          { label: "Estertores pulmonares", value: "Sim", flag: "alert" },
+          { label: "Dispneia paroxística noturna", value: "Sim", flag: "alert" },
+          { label: "Edema agudo de pulmão", value: "Não" },
+          { label: "Turgência jugular patológica", value: "Sim", flag: "alert" },
+          { label: "Refluxo hepatojugular", value: "Não" },
+          { label: "PVC > 16 cmH₂O", value: "Não" },
+          { label: "Cardiomegalia em RX", value: "Sim", flag: "alert" },
+          { label: "Terceira bulha", value: "Sim", flag: "alert" },
+        ]},
+        { title: "Critérios menores (3 positivos)", fields: [
+          { label: "Dispneia de esforço", value: "Sim", flag: "warn" },
+          { label: "Tosse noturna", value: "Sim", flag: "warn" },
+          { label: "Edema maleolar", value: "Sim", flag: "warn" },
+          { label: "Taquicardia >120 bpm", value: "Não" },
+        ]},
+        { title: "Conclusão", fields: [
+          { label: "Diagnóstico", value: "IC confirmada (≥2 maiores)", flag: "alert" },
+        ]},
+      ],
+    },
+    {
+      key: "exame", name: "Exame Físico", short: "Sinais vitais e ectoscopia",
+      updated: "10/04/2026", status: "completo",
+      sections: [{
+        title: "Sinais vitais",
+        fields: [
+          { label: "FC", value: "88 bpm", flag: "warn" },
+          { label: "FR", value: "22 irpm", flag: "warn" },
+          { label: "PAS dir / esq", value: "148 / 146 mmHg", flag: "alert" },
+          { label: "PAD dir / esq", value: "92 / 90 mmHg", flag: "alert" },
+          { label: "SpO₂", value: "93%", flag: "warn" },
+          { label: "Turgência de jugulares", value: "Presente +++", flag: "alert" },
+          { label: "Aparelho respiratório", value: "Estertores em bases" },
+          { label: "Cardiovascular", value: "B3 audível, sopro sistólico mitral 2+/6" },
+          { label: "Membros inferiores", value: "Edema 2+/4 bilateral", flag: "alert" },
+        ],
+      }],
+    },
+    {
+      key: "eco", name: "Ecocardiograma", short: "Função sistólica e diastólica",
+      updated: "05/04/2026", status: "completo",
+      sections: [
+        { title: "Ventrículo esquerdo (2D)", fields: [
+          { label: "VED", value: "62 mm" },
+          { label: "VES", value: "48 mm" },
+          { label: "SIV", value: "12 mm" },
+          { label: "PPVE", value: "11 mm" },
+          { label: "FEVE (Simpson)", value: "32%", flag: "alert" },
+          { label: "GLS-VE", value: "−9,2%", flag: "alert" },
+        ]},
+        { title: "Função diastólica", fields: [
+          { label: "Relação E/A", value: "2,4", flag: "warn" },
+          { label: "E/E' média", value: "16", flag: "alert" },
+          { label: "Disfunção diastólica", value: "Grau 2", flag: "warn" },
+        ]},
+        { title: "VD e hemodinâmica pulmonar", fields: [
+          { label: "TAPSE", value: "15 mm", flag: "warn" },
+          { label: "PSAP", value: "48 mmHg", flag: "alert" },
+        ]},
+      ],
+    },
+    {
+      key: "funcional", name: "Avaliação Funcional", short: "VFC, Ewing, TD6, VO₂",
+      updated: "03/04/2026", status: "parcial",
+      sections: [
+        { title: "Variabilidade da FC", fields: [
+          { label: "RR médio", value: "684 ms" },
+          { label: "SDNN", value: "22 ms", flag: "alert" },
+          { label: "RMSSD", value: "14 ms", flag: "alert" },
+          { label: "Relação LF/HF", value: "3,1", flag: "warn" },
+        ]},
+        { title: "Teste de Ewing", fields: [
+          { label: "CAN", value: "Disfunção severa (3)", flag: "alert" },
+          { label: "Bendopneia", value: "Positiva (<30s)", flag: "alert" },
+        ]},
+        { title: "Teste do Degrau 6min", fields: [
+          { label: "Degraus", value: "48" },
+          { label: "VO₂ máx predito", value: "12,4 ml/kg/min", flag: "alert" },
+          { label: "Δ FC rec 1min", value: "8 bpm", flag: "warn" },
+          { label: "Borg final", value: "8/10", flag: "alert" },
+          { label: "Índice cronotrópico (ICx)", value: "0,62", flag: "alert" },
+        ]},
+      ],
+    },
+    {
+      key: "autocuidado", name: "Autocuidado (SCHFI)", short: "Manutenção, percepção e confiança",
+      updated: "14/04/2026", status: "completo",
+      sections: [
+        { title: "Manutenção", fields: [
+          { label: "Exercício regular", value: "Raramente", flag: "alert" },
+          { label: "Dieta com pouco sal", value: "Às vezes", flag: "warn" },
+          { label: "Toma medicação sem esquecer", value: "Frequentemente" },
+          { label: "Controla peso diariamente", value: "Raramente", flag: "alert" },
+          { label: "Vacina contra gripe", value: "Sempre" },
+        ]},
+        { title: "Percepção de sintomas", fields: [
+          { label: "Observa cansaço incomum", value: "Às vezes", flag: "warn" },
+          { label: "Verifica tornozelos inchados", value: "Raramente", flag: "alert" },
+          { label: "Anota sintomas", value: "Nunca", flag: "alert" },
+        ]},
+        { title: "Confiança", fields: [
+          { label: "Manter-se livre de sintomas", value: "Um pouco confiante", flag: "warn" },
+          { label: "Seguir plano de tratamento", value: "Confiante" },
+          { label: "Reconhecer mudanças", value: "Um pouco confiante", flag: "warn" },
+        ]},
+      ],
+    },
+  ],
+};
