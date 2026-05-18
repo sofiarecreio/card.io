@@ -1,13 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { BiCard, Kpi, RiskBadge } from "@/components/bi/Card";
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import {
   cohortKpis,
   cohortTrend,
   examTypes,
   patients,
+  patientForms,
   riskDistribution,
   teamComparison,
+  type ClinicalForm,
 } from "@/lib/mockData";
 import {
   Bar,
