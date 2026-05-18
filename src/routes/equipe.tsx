@@ -44,6 +44,10 @@ import {
   ClipboardList,
   Droplet,
   Wind,
+  FileText,
+  CheckCircle2,
+  CircleDashed,
+  Clock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/equipe")({
