@@ -1,214 +1,284 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { BiCard, Kpi } from "@/components/bi/Card";
-import { patientTimeSeries, symptomRadar, habitsHeatmap } from "@/lib/mockData";
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  PolarAngleAxis,
-  PolarGrid,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { Heart, HeartPulse, Activity, Smile, AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Heart, HeartPulse, Pill, CalendarDays, Phone, Scale, CheckCircle2,
+  AlertTriangle, Smile, Frown, Meh, Wind, Footprints, Droplets,
+} from "lucide-react";
 
 export const Route = createFileRoute("/paciente")({
   head: () => ({
     meta: [
-      { title: "Minha Evolução · Card.io" },
-      { name: "description", content: "Acompanhe sua frequência cardíaca, autocuidado, hábitos e percepção de sintomas." },
+      { title: "Meu dia · Card.io" },
+      { name: "description", content: "Como você está hoje, seus remédios e sua próxima consulta." },
     ],
   }),
   component: PatientView,
 });
 
-const tooltipStyle = {
-  background: "var(--card)",
-  border: "1px solid var(--border)",
-  borderRadius: 12,
-  fontSize: 12,
-  boxShadow: "var(--shadow-card)",
-};
+type Symptom = { key: string; label: string; icon: React.ReactNode };
+const SYMPTOMS: Symptom[] = [
+  { key: "falta_ar",  label: "Falta de ar",       icon: <Wind className="h-5 w-5" /> },
+  { key: "cansaco",   label: "Cansaço",           icon: <Footprints className="h-5 w-5" /> },
+  { key: "incha",     label: "Pernas inchadas",   icon: <Droplets className="h-5 w-5" /> },
+  { key: "tosse",     label: "Tosse à noite",     icon: <Wind className="h-5 w-5" /> },
+  { key: "palpita",   label: "Coração acelerado", icon: <HeartPulse className="h-5 w-5" /> },
+  { key: "tontura",   label: "Tontura",           icon: <AlertTriangle className="h-5 w-5" /> },
+];
 
 function PatientView() {
-  const last = patientTimeSeries[patientTimeSeries.length - 1];
-  const prev = patientTimeSeries[patientTimeSeries.length - 8];
-  const selfCareDelta = last.selfCare - prev.selfCare;
-  const alert = selfCareDelta < -10;
+  // Today's overall status — single, clear semaphore
+  const [mood, setMood] = useState<"bem" | "mais_ou_menos" | "mal" | null>(null);
+  const [openSymptoms, setOpenSymptoms] = useState(false);
+  const [picked, setPicked] = useState<Record<string, boolean>>({});
+  const [sent, setSent] = useState(false);
+
+  const status =
+    mood === "mal" ? { tone: "alert" as const, label: "Atenção", text: "Avisamos sua equipe. Eles vão entrar em contato." }
+    : mood === "mais_ou_menos" ? { tone: "warn" as const, label: "Fique atento", text: "Descanse, beba água e siga seus remédios." }
+    : { tone: "ok" as const, label: "Tudo bem", text: "Continue cuidando de você. Você está indo muito bem!" };
+
+  const semaphore = {
+    ok:    { bg: "bg-success",  ring: "ring-success/30",  Icon: Smile,         emoji: "😊" },
+    warn:  { bg: "bg-warning",  ring: "ring-warning/30",  Icon: Meh,           emoji: "😐" },
+    alert: { bg: "bg-danger",   ring: "ring-danger/30",   Icon: Frown,         emoji: "😟" },
+  }[status.tone];
+  const SIcon = semaphore.Icon;
+
+  const meds = [
+    { name: "Furosemida 40 mg", time: "Manhã, ao acordar", taken: true },
+    { name: "Carvedilol 25 mg", time: "Manhã, após o café", taken: true },
+    { name: "Losartana 50 mg",  time: "Almoço",            taken: false },
+    { name: "Espironolactona 25 mg", time: "Noite, no jantar", taken: false },
+  ];
+
+  function toggleSymptom(k: string) {
+    setPicked((p) => ({ ...p, [k]: !p[k] }));
+  }
+  function submitSymptoms() {
+    setSent(true);
+    // simple visual feedback then close
+    setTimeout(() => {
+      setOpenSymptoms(false);
+      setSent(false);
+      setPicked({});
+      setMood("mais_ou_menos");
+    }, 1200);
+  }
 
   return (
     <AppShell profile="patient">
-      {/* Hero greeting */}
-      <div className="mb-6 flex flex-col gap-4 rounded-3xl border border-border p-6 md:flex-row md:items-center md:justify-between md:p-8" style={{ background: "var(--gradient-hero)" }}>
-        <div className="text-primary-foreground">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] opacity-80">Olá, Maria</p>
-          <h1 className="mt-1 font-display text-2xl font-semibold md:text-3xl">Como você está hoje?</h1>
-          <p className="mt-2 max-w-lg text-sm opacity-80">
-            Veja a sua evolução nas últimas 4 semanas e mantenha seus hábitos diários para um coração mais saudável.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button className="rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-primary-foreground backdrop-blur transition hover:bg-white/25">
-            Registrar sintomas
-          </button>
-          <button className="rounded-full bg-card px-4 py-2 text-sm font-semibold text-primary transition hover:opacity-90">
-            Iniciar questionário
-          </button>
-        </div>
+      {/* Greeting */}
+      <div className="mb-6 rounded-3xl border border-border p-6 md:p-8" style={{ background: "var(--gradient-hero)" }}>
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground/80">Olá, Dona Maria</p>
+        <h1 className="mt-1 font-display text-3xl font-semibold text-primary-foreground md:text-4xl">
+          Bom dia! Como você está hoje?
+        </h1>
+        <p className="mt-2 text-base text-primary-foreground/90">
+          Toque em uma das carinhas abaixo para nos contar.
+        </p>
       </div>
 
-      {/* Alert banner */}
-      {alert && (
-        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-warning/40 bg-warning/10 p-4">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+      {/* Mood picker — large, single decision */}
+      <section className="mb-6 grid gap-4 sm:grid-cols-3">
+        {([
+          { key: "bem",            label: "Estou bem",        bg: "bg-success",  Icon: Smile },
+          { key: "mais_ou_menos",  label: "Mais ou menos",    bg: "bg-warning",  Icon: Meh },
+          { key: "mal",            label: "Não estou bem",    bg: "bg-danger",   Icon: Frown },
+        ] as const).map((o) => {
+          const active = mood === o.key;
+          const Icon = o.Icon;
+          return (
+            <button
+              key={o.key}
+              onClick={() => setMood(o.key)}
+              className={`flex items-center gap-4 rounded-3xl border-2 p-5 text-left transition ${
+                active ? "border-foreground bg-card shadow-lg" : "border-border bg-card hover:border-foreground/40"
+              }`}
+            >
+              <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl ${o.bg} text-white`}>
+                <Icon className="h-9 w-9" strokeWidth={2.2} />
+              </span>
+              <span className="text-xl font-semibold">{o.label}</span>
+            </button>
+          );
+        })}
+      </section>
+
+      {/* Status banner */}
+      {mood && (
+        <div className={`mb-6 flex items-center gap-4 rounded-3xl border-2 p-5 ${
+          status.tone === "alert" ? "border-danger/40 bg-danger/10"
+          : status.tone === "warn" ? "border-warning/40 bg-warning/10"
+          : "border-success/40 bg-success/10"
+        }`}>
+          <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${semaphore.bg} text-white ring-8 ${semaphore.ring}`}>
+            <SIcon className="h-7 w-7" />
+          </span>
           <div>
-            <h4 className="text-sm font-semibold text-foreground">Atenção ao autocuidado</h4>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Seu índice de autocuidado caiu {Math.abs(selfCareDelta)} pontos nas últimas semanas. Que tal retomar a pesagem diária e revisar seus medicamentos?
-            </p>
+            <div className="text-lg font-semibold">{status.label}</div>
+            <div className="text-base text-foreground/80">{status.text}</div>
           </div>
         </div>
       )}
 
-      {/* KPIs */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi label="FC média" value={last.hr} unit="bpm" delta={`+${last.hr - prev.hr} vs. semana passada`} trend="up" icon={<HeartPulse className="h-4 w-4" />} />
-        <Kpi label="VFC" value={last.hrv} unit="ms" delta={`${last.hrv - prev.hrv} ms`} trend={last.hrv >= prev.hrv ? "up" : "down"} tone={last.hrv < 30 ? "warning" : "default"} icon={<Activity className="h-4 w-4" />} />
-        <Kpi label="Autocuidado" value={`${last.selfCare}%`} delta={`${selfCareDelta > 0 ? "+" : ""}${selfCareDelta} pts`} trend={selfCareDelta >= 0 ? "up" : "down"} tone={alert ? "warning" : "success"} icon={<Heart className="h-4 w-4" />} />
-        <Kpi label="Confiança" value={`${last.confidence}%`} delta="estável" trend="flat" icon={<Smile className="h-4 w-4" />} />
-      </div>
-
-      {/* Charts row */}
-      <div className="grid gap-5 lg:grid-cols-3">
-        <BiCard className="lg:col-span-2" title="Frequência cardíaca & Variabilidade (VFC)" subtitle="Últimos 30 dias" action={<TimeRangePill />}>
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={patientTimeSeries} margin={{ top: 5, right: 8, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="hrGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="hrvGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--info)" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="var(--info)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="hr" name="FC (bpm)" stroke="var(--primary)" strokeWidth={2} fill="url(#hrGrad)" />
-              <Area type="monotone" dataKey="hrv" name="VFC (ms)" stroke="var(--info)" strokeWidth={2} fill="url(#hrvGrad)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </BiCard>
-
-        <BiCard title="Percepção de sintomas" subtitle="Auto-relato semanal" accent={alert ? "warning" : "default"}>
-          <ResponsiveContainer width="100%" height={260}>
-            <RadarChart data={symptomRadar} outerRadius={88}>
-              <PolarGrid stroke="var(--border)" />
-              <PolarAngleAxis dataKey="symptom" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
-              <Radar name="Intensidade" dataKey="value" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.25} />
-              <Tooltip contentStyle={tooltipStyle} />
-            </RadarChart>
-          </ResponsiveContainer>
-        </BiCard>
-
-        <BiCard className="lg:col-span-2" title="Autocuidado & Adesão a hábitos" subtitle="Tendência diária" accent={alert ? "warning" : "success"}>
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={patientTimeSeries} margin={{ top: 5, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} domain={[0, 100]} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Line type="monotone" dataKey="selfCare" name="Autocuidado %" stroke="var(--primary)" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="adherence" name="Adesão %" stroke="var(--success)" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="confidence" name="Confiança %" stroke="var(--info)" strokeWidth={2} strokeDasharray="4 4" dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </BiCard>
-
-        <BiCard title="Hábitos da semana" subtitle="Heatmap diário" >
-          <div className="space-y-1.5">
-            <div className="grid grid-cols-[1fr_repeat(7,1.6rem)] items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-              <span />
-              {["S","T","Q","Q","S","S","D"].map((d, i) => <span key={i} className="text-center">{d}</span>)}
-            </div>
-            {habitsHeatmap.map((row) => (
-              <div key={row.habit} className="grid grid-cols-[1fr_repeat(7,1.6rem)] items-center gap-1.5">
-                <span className="truncate text-xs font-medium">{row.habit}</span>
-                {row.values.map((v, i) => (
-                  <span key={i} className={`h-6 rounded-md ${v ? "bg-success/80" : "bg-muted"} transition`} />
-                ))}
+      {/* Big actions */}
+      <section className="mb-6 grid gap-4 md:grid-cols-2">
+        {/* Registrar sintomas */}
+        <Dialog open={openSymptoms} onOpenChange={setOpenSymptoms}>
+          <DialogTrigger asChild>
+            <button className="flex items-center gap-4 rounded-3xl bg-primary p-6 text-left text-primary-foreground shadow-lg transition hover:opacity-95">
+              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-white/20">
+                <HeartPulse className="h-7 w-7" />
+              </span>
+              <div>
+                <div className="text-xl font-semibold">Registrar sintomas</div>
+                <div className="text-sm opacity-90">Toque aqui para avisar como você está</div>
               </div>
-            ))}
-          </div>
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-xs text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            6 de 7 dias com medicação em dia. Continue assim!
-          </div>
-        </BiCard>
-      </div>
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">Como você está se sentindo?</DialogTitle>
+              <DialogDescription className="text-base">
+                Toque em tudo o que você está sentindo agora. Sua equipe será avisada.
+              </DialogDescription>
+            </DialogHeader>
 
-      {/* Bottom: profile evolution */}
-      <BiCard className="mt-5" title="Evolução do meu perfil" subtitle="Score combinado de autocuidado, sintomas e hábitos" accent={alert ? "warning" : "success"}>
-        <div className="grid gap-6 md:grid-cols-[1.6fr_1fr] md:items-center">
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={patientTimeSeries} margin={{ top: 5, right: 8, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="profileGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--success)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="var(--success)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="selfCare" name="Score do perfil" stroke="var(--success)" strokeWidth={2.5} fill="url(#profileGrad)" />
-            </AreaChart>
-          </ResponsiveContainer>
-          <div className="space-y-3">
-            <Insight tone={alert ? "warning" : "success"} icon={alert ? <AlertTriangle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />} title={alert ? "Risco de piora detectado" : "Perfil estável"} text={alert ? "Indicadores apontam queda no autocuidado. Sua equipe foi notificada." : "Você está mantendo bons hábitos e baixa percepção de sintomas."} />
-            <Insight tone="default" icon={<HeartPulse className="h-4 w-4" />} title="Próxima consulta" text="Quinta-feira, 23/04 às 14h30 — Dr. Lima." />
+            {sent ? (
+              <div className="my-6 flex flex-col items-center gap-3 text-center">
+                <CheckCircle2 className="h-16 w-16 text-success" />
+                <div className="text-xl font-semibold">Obrigado, Dona Maria!</div>
+                <div className="text-base text-muted-foreground">Sua equipe foi avisada.</div>
+              </div>
+            ) : (
+              <div className="my-2 grid grid-cols-2 gap-3">
+                {SYMPTOMS.map((s) => {
+                  const on = !!picked[s.key];
+                  return (
+                    <button
+                      key={s.key}
+                      onClick={() => toggleSymptom(s.key)}
+                      className={`flex items-center gap-3 rounded-2xl border-2 p-4 text-left transition ${
+                        on ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50"
+                      }`}
+                    >
+                      <span className={`grid h-10 w-10 place-items-center rounded-xl ${on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                        {s.icon}
+                      </span>
+                      <span className="text-base font-medium">{s.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {!sent && (
+              <DialogFooter className="gap-2 sm:gap-2">
+                <Button variant="outline" size="lg" onClick={() => setOpenSymptoms(false)} className="text-base">
+                  Cancelar
+                </Button>
+                <Button size="lg" onClick={submitSymptoms} className="text-base font-semibold">
+                  Enviar para a equipe
+                </Button>
+              </DialogFooter>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Próxima consulta */}
+        <div className="rounded-3xl border-2 border-border bg-card p-6">
+          <div className="flex items-center gap-3 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            <CalendarDays className="h-5 w-5" /> Próxima consulta
+          </div>
+          <div className="mt-2 text-2xl font-semibold leading-tight">Quinta-feira, 23 de abril</div>
+          <div className="mt-1 text-lg">às <span className="font-semibold">14h30</span> com <span className="font-semibold">Dr. Lima</span></div>
+          <div className="mt-1 text-base text-muted-foreground">Hospital Universitário — sala 3</div>
+          <a href="tel:+551130000000" className="mt-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-foreground hover:bg-accent">
+            <Phone className="h-4 w-4" /> Ligar para a clínica
+          </a>
+        </div>
+      </section>
+
+      {/* Remédios + peso */}
+      <section className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-3xl border-2 border-border bg-card p-6 lg:col-span-2">
+          <div className="mb-4 flex items-center gap-3">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/15 text-primary">
+              <Pill className="h-6 w-6" />
+            </span>
+            <div>
+              <h2 className="text-xl font-semibold">Meus remédios de hoje</h2>
+              <p className="text-base text-muted-foreground">Marque quando tomar</p>
+            </div>
+          </div>
+          <ul className="space-y-2.5">
+            {meds.map((m) => (
+              <li key={m.name} className={`flex items-center justify-between rounded-2xl border-2 p-4 ${m.taken ? "border-success/30 bg-success/5" : "border-border bg-background"}`}>
+                <div>
+                  <div className="text-lg font-semibold">{m.name}</div>
+                  <div className="text-sm text-muted-foreground">{m.time}</div>
+                </div>
+                {m.taken ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1.5 text-sm font-semibold text-white">
+                    <CheckCircle2 className="h-4 w-4" /> Tomado
+                  </span>
+                ) : (
+                  <button className="rounded-full border-2 border-foreground px-4 py-1.5 text-sm font-semibold hover:bg-foreground hover:text-background">
+                    Marcar
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-3xl border-2 border-border bg-card p-6">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-info/15 text-info">
+              <Scale className="h-6 w-6" />
+            </span>
+            <h2 className="text-xl font-semibold">Meu peso hoje</h2>
+          </div>
+          <div className="rounded-2xl bg-secondary/60 p-4 text-center">
+            <div className="font-display text-5xl font-semibold">74,2 <span className="text-2xl text-muted-foreground">kg</span></div>
+            <div className="mt-1 text-sm text-success font-medium">Igual a ontem ✓</div>
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Se subir <span className="font-semibold text-foreground">mais de 2 kg em 3 dias</span>, ligue para sua equipe.
+          </p>
+          <button className="mt-4 w-full rounded-full bg-primary px-4 py-3 text-base font-semibold text-primary-foreground hover:opacity-90">
+            Registrar peso de hoje
+          </button>
+        </div>
+
+        {/* Recados da equipe */}
+        <div className="rounded-3xl border-2 border-border bg-card p-6 lg:col-span-3">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-accent text-accent-foreground">
+              <Heart className="h-6 w-6" />
+            </span>
+            <h2 className="text-xl font-semibold">Recados da sua equipe</h2>
+          </div>
+          <div className="rounded-2xl border border-border bg-secondary/40 p-4">
+            <p className="text-base leading-relaxed">
+              <span className="font-semibold">Enf. Carla:</span> Dona Maria, lembre-se de tomar a Losartana no almoço.
+              Estamos acompanhando você. Qualquer coisa, pode chamar a gente! 💚
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">Hoje, 09h12</p>
           </div>
         </div>
-      </BiCard>
+      </section>
     </AppShell>
-  );
-}
-
-function Insight({ icon, title, text, tone }: { icon: React.ReactNode; title: string; text: string; tone: "default" | "warning" | "success" }) {
-  const cls = {
-    default: "border-border bg-secondary/50 text-foreground",
-    warning: "border-warning/30 bg-warning/10 text-foreground",
-    success: "border-success/30 bg-success/10 text-foreground",
-  }[tone];
-  const iconCls = { default: "text-primary", warning: "text-warning", success: "text-success" }[tone];
-  return (
-    <div className={`flex gap-3 rounded-2xl border p-3 ${cls}`}>
-      <div className={`mt-0.5 ${iconCls}`}>{icon}</div>
-      <div>
-        <div className="text-sm font-semibold">{title}</div>
-        <p className="mt-0.5 text-xs text-muted-foreground">{text}</p>
-      </div>
-    </div>
-  );
-}
-
-function TimeRangePill() {
-  return (
-    <div className="flex rounded-full border border-border bg-secondary/60 p-0.5 text-[11px] font-medium">
-      {["7d", "30d", "90d"].map((r, i) => (
-        <button key={r} className={`rounded-full px-2.5 py-1 ${i === 1 ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>{r}</button>
-      ))}
-    </div>
   );
 }
