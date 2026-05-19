@@ -85,6 +85,51 @@ export const patients: Patient[] = [
   { id: "P-1098", name: "Luís A. Mendes", age: 70, risk: "medium", selfCare: 66, adherence: 72, bp: "140/85", spo2: 94, hr: 82, fe: 36, vo2: 14.3, lastResponse: "há 6h", trend: "stable" },
 ];
 
+export type ClinicalPoint = {
+  date: string;
+  hr: number;
+  weight: number;
+  adherence: number;
+};
+
+const timelineDays = ["01/04", "05/04", "09/04", "13/04", "17/04", "21/04", "25/04", "29/04"];
+
+export const patientLongitudinal: Record<string, ClinicalPoint[]> = Object.fromEntries(
+  patients.map((patient, patientIndex) => [
+    patient.id,
+    timelineDays.map((date, index) => {
+      const worsening = patient.trend === "down" ? index * 0.7 : patient.trend === "up" ? -index * 0.35 : index * 0.1;
+      return {
+        date,
+        hr: Math.round(patient.hr - 5 + index * 0.9 + worsening),
+        weight: Number((72 + patientIndex * 0.6 + index * 0.16 + (patient.risk === "high" ? index * 0.12 : 0)).toFixed(1)),
+        adherence: Math.max(42, Math.min(96, Math.round(patient.adherence + (patient.trend === "down" ? -index * 1.6 : index * 0.5)))),
+      };
+    }),
+  ]),
+) as Record<string, ClinicalPoint[]>;
+
+export const alertTrend = [
+  { period: "Sem 1", criticos: 8, moderados: 13 },
+  { period: "Sem 2", criticos: 11, moderados: 15 },
+  { period: "Sem 3", criticos: 7, moderados: 12 },
+  { period: "Sem 4", criticos: 14, moderados: 18 },
+];
+
+export const medicationAdherenceTrend = [
+  { period: "Sem 1", tomada: 81, naoTomada: 19 },
+  { period: "Sem 2", tomada: 78, naoTomada: 22 },
+  { period: "Sem 3", tomada: 83, naoTomada: 17 },
+  { period: "Sem 4", tomada: 76, naoTomada: 24 },
+];
+
+export const professionalFollowUp = [
+  { professional: "Dr. Lima", patients: 48, updated: 41, alerts: 10 },
+  { professional: "Enf. Carla", patients: 52, updated: 47, alerts: 8 },
+  { professional: "Tec. Bruno", patients: 39, updated: 31, alerts: 12 },
+  { professional: "Dra. Nunes", patients: 44, updated: 38, alerts: 7 },
+];
+
 export const teamComparison = [
   { team: "Cardio A", pacientes: 62, adesao: 82, alertas: 8 },
   { team: "Cardio B", pacientes: 54, adesao: 76, alertas: 12 },

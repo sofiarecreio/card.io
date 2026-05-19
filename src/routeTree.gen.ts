@@ -9,10 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PacienteRouteImport } from './routes/paciente'
 import { Route as EquipeRouteImport } from './routes/equipe'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProntuarioPatientIdRouteImport } from './routes/prontuario.$patientId'
 
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PacienteRoute = PacienteRouteImport.update({
   id: '/paciente',
   path: '/paciente',
@@ -28,39 +35,70 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProntuarioPatientIdRoute = ProntuarioPatientIdRouteImport.update({
+  id: '/prontuario/$patientId',
+  path: '/prontuario/$patientId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/equipe': typeof EquipeRoute
   '/paciente': typeof PacienteRoute
+  '/perfil': typeof PerfilRoute
+  '/prontuario/$patientId': typeof ProntuarioPatientIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/equipe': typeof EquipeRoute
   '/paciente': typeof PacienteRoute
+  '/perfil': typeof PerfilRoute
+  '/prontuario/$patientId': typeof ProntuarioPatientIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/equipe': typeof EquipeRoute
   '/paciente': typeof PacienteRoute
+  '/perfil': typeof PerfilRoute
+  '/prontuario/$patientId': typeof ProntuarioPatientIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/equipe' | '/paciente'
+  fullPaths:
+    | '/'
+    | '/equipe'
+    | '/paciente'
+    | '/perfil'
+    | '/prontuario/$patientId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/equipe' | '/paciente'
-  id: '__root__' | '/' | '/equipe' | '/paciente'
+  to: '/' | '/equipe' | '/paciente' | '/perfil' | '/prontuario/$patientId'
+  id:
+    | '__root__'
+    | '/'
+    | '/equipe'
+    | '/paciente'
+    | '/perfil'
+    | '/prontuario/$patientId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EquipeRoute: typeof EquipeRoute
   PacienteRoute: typeof PacienteRoute
+  PerfilRoute: typeof PerfilRoute
+  ProntuarioPatientIdRoute: typeof ProntuarioPatientIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/paciente': {
       id: '/paciente'
       path: '/paciente'
@@ -82,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/prontuario/$patientId': {
+      id: '/prontuario/$patientId'
+      path: '/prontuario/$patientId'
+      fullPath: '/prontuario/$patientId'
+      preLoaderRoute: typeof ProntuarioPatientIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,7 +134,19 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EquipeRoute: EquipeRoute,
   PacienteRoute: PacienteRoute,
+  PerfilRoute: PerfilRoute,
+  ProntuarioPatientIdRoute: ProntuarioPatientIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

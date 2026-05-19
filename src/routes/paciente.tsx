@@ -36,12 +36,33 @@ const SYMPTOMS: Symptom[] = [
   { key: "tontura",   label: "Tontura",           icon: <AlertTriangle className="h-5 w-5" /> },
 ];
 
+type MedicationStatus = "taken" | "missed" | "pending";
+type Medication = {
+  id: string;
+  name: string;
+  time: string;
+  status: MedicationStatus;
+};
+
+const INITIAL_MEDICATIONS: Medication[] = [
+  { id: "furosemida", name: "Furosemida 40 mg", time: "Manhã, ao acordar, 8h da manhã", status: "taken" },
+  { id: "carvedilol", name: "Carvedilol 25 mg", time: "Manhã, após o café, 9h da manhã", status: "taken" },
+  { id: "losartana", name: "Losartana 50 mg", time: "Almoço, 12h30", status: "pending" },
+  { id: "espironolactona", name: "Espironolactona 25 mg", time: "Noite, no jantar, 20h", status: "pending" },
+];
+
 function PatientView() {
   // Today's overall status — single, clear semaphore
   const [mood, setMood] = useState<"bem" | "mais_ou_menos" | "mal" | null>(null);
   const [openSymptoms, setOpenSymptoms] = useState(false);
   const [picked, setPicked] = useState<Record<string, boolean>>({});
   const [sent, setSent] = useState(false);
+  const [meds, setMeds] = useState<Medication[]>(INITIAL_MEDICATIONS);
+  const [pendingMedication, setPendingMedication] = useState<{ id: string; status: MedicationStatus } | null>(null);
+  const [weight, setWeight] = useState("74,2");
+  const [draftWeight, setDraftWeight] = useState(weight);
+  const [openWeight, setOpenWeight] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const status =
     mood === "mal" ? { tone: "alert" as const, label: "Atenção", text: "Avisamos sua equipe. Eles vão entrar em contato." }
@@ -55,13 +76,6 @@ function PatientView() {
   }[status.tone];
   const SIcon = semaphore.Icon;
 
-  const meds = [
-    { name: "Furosemida 40 mg", time: "Manhã, ao acordar", taken: true },
-    { name: "Carvedilol 25 mg", time: "Manhã, após o café", taken: true },
-    { name: "Losartana 50 mg",  time: "Almoço",            taken: false },
-    { name: "Espironolactona 25 mg", time: "Noite, no jantar", taken: false },
-  ];
-
   function toggleSymptom(k: string) {
     setPicked((p) => ({ ...p, [k]: !p[k] }));
   }
@@ -74,6 +88,26 @@ function PatientView() {
       setPicked({});
       setMood("mais_ou_menos");
     }, 1200);
+  }
+  function confirmMedication() {
+    if (!pendingMedication) return;
+    const medication = meds.find((m) => m.id === pendingMedication.id);
+    setMeds((current) =>
+      current.map((m) => (m.id === pendingMedication.id ? { ...m, status: pendingMedication.status } : m)),
+    );
+    setFeedback(
+      `${medication?.name ?? "Remédio"} marcado como ${
+        pendingMedication.status === "taken" ? "tomado" : "não tomado"
+      }.`,
+    );
+    setPendingMedication(null);
+  }
+  function saveWeight() {
+    const normalized = draftWeight.trim().replace(".", ",");
+    if (!normalized) return;
+    setWeight(normalized);
+    setOpenWeight(false);
+    setFeedback(`Peso atualizado para ${normalized} kg.`);
   }
 
   return (
@@ -129,6 +163,13 @@ function PatientView() {
             <div className="text-lg font-semibold">{status.label}</div>
             <div className="text-base text-foreground/80">{status.text}</div>
           </div>
+        </div>
+      )}
+
+      {feedback && (
+        <div className="mb-6 flex items-center gap-3 rounded-3xl border-2 border-success/30 bg-success/10 p-4 text-base font-medium text-foreground">
+          <CheckCircle2 className="h-6 w-6 shrink-0 text-success" />
+          {feedback}
         </div>
       )}
 
@@ -224,20 +265,42 @@ function PatientView() {
           </div>
           <ul className="space-y-2.5">
             {meds.map((m) => (
-              <li key={m.name} className={`flex items-center justify-between rounded-2xl border-2 p-4 ${m.taken ? "border-success/30 bg-success/5" : "border-border bg-background"}`}>
+              <li
+                key={m.id}
+                className={`flex flex-col gap-4 rounded-2xl border-2 p-4 sm:flex-row sm:items-center sm:justify-between ${
+                  m.status === "taken"
+                    ? "border-success/30 bg-success/5"
+                    : m.status === "missed"
+                      ? "border-danger/30 bg-danger/5"
+                      : "border-border bg-background"
+                }`}
+              >
                 <div>
                   <div className="text-lg font-semibold">{m.name}</div>
-                  <div className="text-sm text-muted-foreground">{m.time}</div>
+                  <div className="mt-1 text-xl font-semibold text-foreground/85">{m.time}</div>
                 </div>
-                {m.taken ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1.5 text-sm font-semibold text-white">
-                    <CheckCircle2 className="h-4 w-4" /> Tomado
-                  </span>
-                ) : (
-                  <button className="rounded-full border-2 border-foreground px-4 py-1.5 text-sm font-semibold hover:bg-foreground hover:text-background">
-                    Marcar
+                <div className="grid grid-cols-2 gap-2 sm:w-64">
+                  <button
+                    onClick={() => setPendingMedication({ id: m.id, status: "taken" })}
+                    className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                      m.status === "taken"
+                        ? "bg-success text-success-foreground"
+                        : "border-2 border-success/35 bg-card text-success hover:bg-success/10"
+                    }`}
+                  >
+                    Tomado
                   </button>
-                )}
+                  <button
+                    onClick={() => setPendingMedication({ id: m.id, status: "missed" })}
+                    className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                      m.status === "missed"
+                        ? "bg-danger text-danger-foreground"
+                        : "border-2 border-danger/35 bg-card text-danger hover:bg-danger/10"
+                    }`}
+                  >
+                    Não tomei
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -251,13 +314,19 @@ function PatientView() {
             <h2 className="text-xl font-semibold">Meu peso hoje</h2>
           </div>
           <div className="rounded-2xl bg-secondary/60 p-4 text-center">
-            <div className="font-display text-5xl font-semibold">74,2 <span className="text-2xl text-muted-foreground">kg</span></div>
-            <div className="mt-1 text-sm text-success font-medium">Igual a ontem ✓</div>
+            <div className="font-display text-5xl font-semibold">{weight} <span className="text-2xl text-muted-foreground">kg</span></div>
+            <div className="mt-1 text-sm text-success font-medium">Atualizado hoje</div>
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
             Se subir <span className="font-semibold text-foreground">mais de 2 kg em 3 dias</span>, ligue para sua equipe.
           </p>
-          <button className="mt-4 w-full rounded-full bg-primary px-4 py-3 text-base font-semibold text-primary-foreground hover:opacity-90">
+          <button
+            onClick={() => {
+              setDraftWeight(weight);
+              setOpenWeight(true);
+            }}
+            className="mt-4 w-full rounded-full bg-primary px-4 py-3 text-base font-semibold text-primary-foreground hover:opacity-90"
+          >
             Registrar peso de hoje
           </button>
         </div>
@@ -279,6 +348,58 @@ function PatientView() {
           </div>
         </div>
       </section>
+
+      <Dialog open={!!pendingMedication} onOpenChange={(open) => !open && setPendingMedication(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Confirmar remédio</DialogTitle>
+            <DialogDescription className="text-base">
+              {pendingMedication
+                ? `Você quer marcar ${
+                    meds.find((m) => m.id === pendingMedication.id)?.name ?? "este remédio"
+                  } como ${pendingMedication.status === "taken" ? "tomado" : "não tomado"}?`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" size="lg" onClick={() => setPendingMedication(null)} className="text-base">
+              Voltar
+            </Button>
+            <Button size="lg" onClick={confirmMedication} className="text-base font-semibold">
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openWeight} onOpenChange={setOpenWeight}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Confirmar peso</DialogTitle>
+            <DialogDescription className="text-base">
+              Digite o peso de hoje e confirme antes de salvar.
+            </DialogDescription>
+          </DialogHeader>
+          <label className="text-base font-semibold">
+            Peso atual em kg
+            <input
+              value={draftWeight}
+              onChange={(event) => setDraftWeight(event.target.value)}
+              inputMode="decimal"
+              className="mt-2 h-14 w-full rounded-2xl border-2 border-border bg-background px-4 text-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Ex.: 74,2"
+            />
+          </label>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" size="lg" onClick={() => setOpenWeight(false)} className="text-base">
+              Cancelar
+            </Button>
+            <Button size="lg" onClick={saveWeight} className="text-base font-semibold">
+              Confirmar e salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
