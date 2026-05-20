@@ -27,14 +27,16 @@ export function BiCard({
     <section
       className={cn(
         "group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition hover:shadow-[var(--shadow-elegant)]",
-        className
+        className,
       )}
     >
       <span className={cn("absolute left-0 top-5 h-8 w-1 rounded-r-full", accentBar)} />
       {(title || action) && (
         <header className="mb-4 flex items-start justify-between gap-3">
           <div>
-            {title && <h3 className="font-display text-sm font-semibold tracking-tight">{title}</h3>}
+            {title && (
+              <h3 className="font-display text-sm font-semibold tracking-tight">{title}</h3>
+            )}
             {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}
           </div>
           {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
@@ -53,6 +55,8 @@ export function Kpi({
   trend,
   tone = "default",
   icon,
+  active,
+  onClick,
 }: {
   label: string;
   value: string | number;
@@ -61,6 +65,8 @@ export function Kpi({
   trend?: "up" | "down" | "flat";
   tone?: "default" | "danger" | "warning" | "success";
   icon?: ReactNode;
+  active?: boolean;
+  onClick?: () => void;
 }) {
   const toneClass = {
     default: "text-foreground",
@@ -68,20 +74,42 @@ export function Kpi({
     warning: "text-warning",
     success: "text-success",
   }[tone];
-  const trendColor = trend === "up" ? "text-success" : trend === "down" ? "text-danger" : "text-muted-foreground";
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+  const trendColor =
+    trend === "up" ? "text-success" : trend === "down" ? "text-danger" : "text-muted-foreground";
+  const className = cn(
+    "rounded-2xl border border-border bg-card p-4 text-left shadow-[var(--shadow-card)] transition",
+    onClick &&
+      "cursor-pointer hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-[var(--shadow-elegant)] focus:outline-none focus:ring-2 focus:ring-ring",
+    active && "border-primary/60 ring-2 ring-primary/15",
+  );
+
+  const content = (
+    <>
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
+        <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </span>
         {icon && <span className="text-muted-foreground">{icon}</span>}
       </div>
       <div className="mt-2 flex items-baseline gap-1.5">
-        <span className={`font-display text-3xl font-semibold tracking-tight ${toneClass}`}>{value}</span>
+        <span className={`font-display text-3xl font-semibold tracking-tight ${toneClass}`}>
+          {value}
+        </span>
         {unit && <span className="text-xs font-medium text-muted-foreground">{unit}</span>}
       </div>
       {delta && <div className={`mt-1 text-xs font-medium ${trendColor}`}>{delta}</div>}
-    </div>
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={className}>
+        {content}
+      </button>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
 }
 
 export function RiskBadge({ risk }: { risk: "low" | "medium" | "high" }) {
@@ -91,7 +119,9 @@ export function RiskBadge({ risk }: { risk: "low" | "medium" | "high" }) {
     high: { label: "Alto", cls: "bg-danger/15 text-danger border-danger/30" },
   }[risk];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${map.cls}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${map.cls}`}
+    >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {map.label}
     </span>

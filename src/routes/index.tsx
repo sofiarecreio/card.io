@@ -1,16 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import {
-  Activity,
-  ArrowRight,
-  ClipboardCheck,
-  Heart,
-  LineChart,
-  LogIn,
-  ShieldAlert,
-  Stethoscope,
-  UserPlus,
-} from "lucide-react";
+import { ArrowRight, Heart, LockKeyhole, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,17 +8,17 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Plataforma de Business Intelligence para monitoramento contínuo de pacientes com insuficiência cardíaca.",
+          "Portal de acesso para pacientes e equipe médica no monitoramento contínuo de insuficiência cardíaca.",
       },
     ],
   }),
-  component: Landing,
+  component: LoginPortal,
 });
 
-function Landing() {
+function LoginPortal() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
+      <header className="border-b border-border bg-card">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2.5">
             <div
@@ -45,74 +34,105 @@ function Landing() {
               </div>
             </div>
           </div>
-          <span className="text-xs text-muted-foreground">Mockup demonstrativo</span>
+          <span className="hidden text-xs font-medium text-muted-foreground sm:inline">
+            Portal de monitoramento remoto
+          </span>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-16 md:py-24">
-        <div className="max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" /> Plataforma BI · Cardiologia
-            preventiva
-          </span>
-          <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
-            Monitoramento contínuo de{" "}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "var(--gradient-hero)" }}
-            >
-              insuficiência cardíaca
+      <section className="bg-primary text-primary-foreground">
+        <div className="mx-auto flex min-h-40 max-w-7xl items-center px-6 py-8">
+          <div>
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary">
+              Novo portal
             </span>
-            , do paciente ao cardiologista.
-          </h1>
-          <p className="mt-5 max-w-2xl text-base text-muted-foreground md:text-lg">
-            Visualize evolução clínica, autocuidado e risco de descompensação em tempo real.
-            Selecione o perfil para explorar a interface.
-          </p>
+            <div className="mt-4 flex items-center gap-4">
+              <ShieldCheck className="h-12 w-12" />
+              <div>
+                <p className="text-sm font-semibold">Monitoramento de insuficiência cardíaca</p>
+                <h1 className="font-display text-4xl font-semibold leading-none tracking-tight">
+                  Card.io
+                </h1>
+              </div>
+            </div>
+            <p className="mt-4 max-w-xl text-sm font-medium text-primary-foreground/90">
+              Acesso simples para pacientes e equipe assistencial acompanharem cuidado, alertas e
+              evolução clínica.
+            </p>
+          </div>
         </div>
+      </section>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-2">
+      <main className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[420px_1fr] lg:items-center lg:py-24">
+        <div className="space-y-4">
           <AuthAccessCard
             profile="patient"
-            title="Paciente"
-            description="Acesso simples para acompanhar remédios, peso, sintomas e recados da equipe."
+            title="Entrar como paciente"
+            description="Acompanhe seus remédios, peso, sintomas e recados da equipe."
             route="/paciente"
-            icon={<Activity className="h-5 w-5" />}
+            identifierLabel="CPF ou telefone"
+            identifierPlaceholder="Digite seu CPF ou telefone"
+            icon={<UserRound className="h-5 w-5" />}
           />
+
+          <div className="flex items-center gap-3 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="h-px flex-1 bg-border" />
+            ou
+            <span className="h-px flex-1 bg-border" />
+          </div>
 
           <AuthAccessCard
             profile="team"
-            title="Equipe médica"
-            description="Acesso profissional para médicos, enfermeiros e técnicos de enfermagem."
+            title="Entrar como equipe médica"
+            description="Acesse pacientes filtrados, alertas críticos e prontuários."
             route="/equipe"
+            identifierLabel="E-mail institucional"
+            identifierPlaceholder="nome@hospital.edu"
             icon={<Stethoscope className="h-5 w-5" />}
           />
         </div>
 
-        <div className="mt-20 grid gap-4 md:grid-cols-3">
-          {[
-            {
-              icon: LineChart,
-              title: "Séries temporais",
-              desc: "Evolução de FC, peso, PA, SpO₂ e adesão.",
-            },
-            {
-              icon: ShieldAlert,
-              title: "Alertas de risco",
-              desc: "Sinalização visual quando o autocuidado cai.",
-            },
-            {
-              icon: ClipboardCheck,
-              title: "Rotina assistencial",
-              desc: "Prontuário, formulários, medicamentos e preferências.",
-            },
-          ].map((f) => (
-            <div key={f.title} className="rounded-2xl border border-border bg-card p-5">
-              <f.icon className="h-5 w-5 text-primary" />
-              <h3 className="mt-3 font-display text-sm font-semibold">{f.title}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">{f.desc}</p>
+        <div className="rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)] lg:p-10">
+          <div className="mx-auto grid aspect-[16/10] max-w-xl place-items-center rounded-2xl bg-secondary/60">
+            <div className="w-[78%] rounded-2xl border border-border bg-background p-4 shadow-[var(--shadow-elegant)]">
+              <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
+                <div>
+                  <div className="h-2.5 w-28 rounded-full bg-primary/70" />
+                  <div className="mt-2 h-2 w-40 rounded-full bg-muted" />
+                </div>
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary/15 text-primary">
+                  <Heart className="h-4 w-4" fill="currentColor" />
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[72, 88, 54].map((height, index) => (
+                  <div key={index} className="rounded-xl border border-border bg-card p-3">
+                    <div className="h-2 w-16 rounded-full bg-muted" />
+                    <div className="mt-4 flex h-24 items-end gap-1.5">
+                      {[height, height - 18, height + 8].map((bar, barIndex) => (
+                        <span
+                          key={barIndex}
+                          className="w-full rounded-t bg-primary/70"
+                          style={{ height: `${Math.max(28, bar)}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 rounded-xl border border-warning/25 bg-warning/10 p-3">
+                <div className="h-2 w-32 rounded-full bg-warning" />
+                <div className="mt-2 h-2 w-52 rounded-full bg-warning/30" />
+              </div>
             </div>
-          ))}
+          </div>
+          <h2 className="mt-8 text-center font-display text-3xl font-semibold tracking-tight text-primary">
+            Um portal para acompanhar o cuidado
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-relaxed text-muted-foreground">
+            O paciente entra no seu painel diário; a equipe médica entra no dashboard clínico e nos
+            prontuários.
+          </p>
         </div>
       </main>
     </div>
@@ -124,98 +144,60 @@ function AuthAccessCard({
   title,
   description,
   route,
+  identifierLabel,
+  identifierPlaceholder,
   icon,
 }: {
   profile: "patient" | "team";
   title: string;
   description: string;
   route: "/paciente" | "/equipe";
+  identifierLabel: string;
+  identifierPlaceholder: string;
   icon: React.ReactNode;
 }) {
-  const [mode, setMode] = useState<"login" | "signup">("login");
   const isPatient = profile === "patient";
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
-      <div className="flex items-start gap-4">
+    <section className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+      <div className="flex items-start gap-3">
         <div
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${
-            isPatient ? "bg-accent text-accent-foreground" : "text-primary-foreground"
+          className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${
+            isPatient ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"
           }`}
-          style={!isPatient ? { background: "var(--gradient-hero)" } : undefined}
         >
           {icon}
         </div>
         <div>
-          <h2 className="font-display text-2xl font-semibold tracking-tight">{title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 rounded-full border border-border bg-secondary/60 p-1">
-        {[
-          { key: "login", label: "Login", icon: LogIn },
-          { key: "signup", label: "Cadastro", icon: UserPlus },
-        ].map((option) => {
-          const Icon = option.icon;
-          const active = mode === option.key;
-          return (
-            <button
-              key={option.key}
-              onClick={() => setMode(option.key as "login" | "signup")}
-              className={`flex items-center justify-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition ${
-                active
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
-
       <form className="mt-5 space-y-3" onSubmit={(event) => event.preventDefault()}>
-        {mode === "signup" && (
-          <label className="block text-sm font-medium">
-            Nome completo
-            <input
-              className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder={isPatient ? "Seu nome" : "Nome do profissional"}
-            />
-          </label>
-        )}
         <label className="block text-sm font-medium">
-          {isPatient ? "CPF ou telefone" : "E-mail institucional"}
+          {identifierLabel}
           <input
             className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder={isPatient ? "Digite seu CPF ou telefone" : "nome@hospital.edu"}
+            placeholder={identifierPlaceholder}
           />
         </label>
         <label className="block text-sm font-medium">
           Senha
-          <input
-            type="password"
-            className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Digite sua senha"
-          />
+          <div className="relative mt-1">
+            <LockKeyhole className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="password"
+              className="h-11 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Digite sua senha"
+            />
+          </div>
         </label>
-        {!isPatient && mode === "signup" && (
-          <label className="block text-sm font-medium">
-            Função
-            <select className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-              <option>Médico</option>
-              <option>Enfermeiro</option>
-              <option>Técnico de enfermagem</option>
-            </select>
-          </label>
-        )}
         <Link
           to={route}
-          className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
         >
-          {mode === "login" ? "Entrar" : "Criar cadastro e entrar"}
+          {title}
           <ArrowRight className="h-4 w-4" />
         </Link>
       </form>

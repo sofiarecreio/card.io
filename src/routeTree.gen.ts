@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PacienteRouteImport } from './routes/paciente'
 import { Route as EquipeRouteImport } from './routes/equipe'
+import { Route as CadastroPacienteRouteImport } from './routes/cadastro-paciente'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProntuarioPatientIdRouteImport } from './routes/prontuario.$patientId'
 
@@ -30,6 +31,11 @@ const EquipeRoute = EquipeRouteImport.update({
   path: '/equipe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CadastroPacienteRoute = CadastroPacienteRouteImport.update({
+  id: '/cadastro-paciente',
+  path: '/cadastro-paciente',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const ProntuarioPatientIdRoute = ProntuarioPatientIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cadastro-paciente': typeof CadastroPacienteRoute
   '/equipe': typeof EquipeRoute
   '/paciente': typeof PacienteRoute
   '/perfil': typeof PerfilRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cadastro-paciente': typeof CadastroPacienteRoute
   '/equipe': typeof EquipeRoute
   '/paciente': typeof PacienteRoute
   '/perfil': typeof PerfilRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cadastro-paciente': typeof CadastroPacienteRoute
   '/equipe': typeof EquipeRoute
   '/paciente': typeof PacienteRoute
   '/perfil': typeof PerfilRoute
@@ -67,15 +76,23 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/cadastro-paciente'
     | '/equipe'
     | '/paciente'
     | '/perfil'
     | '/prontuario/$patientId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/equipe' | '/paciente' | '/perfil' | '/prontuario/$patientId'
+  to:
+    | '/'
+    | '/cadastro-paciente'
+    | '/equipe'
+    | '/paciente'
+    | '/perfil'
+    | '/prontuario/$patientId'
   id:
     | '__root__'
     | '/'
+    | '/cadastro-paciente'
     | '/equipe'
     | '/paciente'
     | '/perfil'
@@ -84,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CadastroPacienteRoute: typeof CadastroPacienteRoute
   EquipeRoute: typeof EquipeRoute
   PacienteRoute: typeof PacienteRoute
   PerfilRoute: typeof PerfilRoute
@@ -113,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EquipeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cadastro-paciente': {
+      id: '/cadastro-paciente'
+      path: '/cadastro-paciente'
+      fullPath: '/cadastro-paciente'
+      preLoaderRoute: typeof CadastroPacienteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -132,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CadastroPacienteRoute: CadastroPacienteRoute,
   EquipeRoute: EquipeRoute,
   PacienteRoute: PacienteRoute,
   PerfilRoute: PerfilRoute,

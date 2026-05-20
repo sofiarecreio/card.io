@@ -12,15 +12,30 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
-  Heart, HeartPulse, Pill, CalendarDays, Phone, Scale, CheckCircle2,
-  AlertTriangle, Smile, Frown, Meh, Wind, Footprints, Droplets,
+  Heart,
+  HeartPulse,
+  Pill,
+  CalendarDays,
+  Phone,
+  Scale,
+  CheckCircle2,
+  AlertTriangle,
+  Smile,
+  Frown,
+  Meh,
+  Wind,
+  Footprints,
+  Droplets,
 } from "lucide-react";
 
 export const Route = createFileRoute("/paciente")({
   head: () => ({
     meta: [
       { title: "Meu dia · Card.io" },
-      { name: "description", content: "Como você está hoje, seus remédios e sua próxima consulta." },
+      {
+        name: "description",
+        content: "Como você está hoje, seus remédios e sua próxima consulta.",
+      },
     ],
   }),
   component: PatientView,
@@ -28,12 +43,12 @@ export const Route = createFileRoute("/paciente")({
 
 type Symptom = { key: string; label: string; icon: React.ReactNode };
 const SYMPTOMS: Symptom[] = [
-  { key: "falta_ar",  label: "Falta de ar",       icon: <Wind className="h-5 w-5" /> },
-  { key: "cansaco",   label: "Cansaço",           icon: <Footprints className="h-5 w-5" /> },
-  { key: "incha",     label: "Pernas inchadas",   icon: <Droplets className="h-5 w-5" /> },
-  { key: "tosse",     label: "Tosse à noite",     icon: <Wind className="h-5 w-5" /> },
-  { key: "palpita",   label: "Coração acelerado", icon: <HeartPulse className="h-5 w-5" /> },
-  { key: "tontura",   label: "Tontura",           icon: <AlertTriangle className="h-5 w-5" /> },
+  { key: "falta_ar", label: "Falta de ar", icon: <Wind className="h-5 w-5" /> },
+  { key: "cansaco", label: "Cansaço", icon: <Footprints className="h-5 w-5" /> },
+  { key: "incha", label: "Pernas inchadas", icon: <Droplets className="h-5 w-5" /> },
+  { key: "tosse", label: "Tosse à noite", icon: <Wind className="h-5 w-5" /> },
+  { key: "palpita", label: "Coração acelerado", icon: <HeartPulse className="h-5 w-5" /> },
+  { key: "tontura", label: "Tontura", icon: <AlertTriangle className="h-5 w-5" /> },
 ];
 
 type MedicationStatus = "taken" | "missed" | "pending";
@@ -45,10 +60,15 @@ type Medication = {
 };
 
 const INITIAL_MEDICATIONS: Medication[] = [
-  { id: "furosemida", name: "Furosemida 40 mg", time: "Manhã, ao acordar, 8h da manhã", status: "taken" },
-  { id: "carvedilol", name: "Carvedilol 25 mg", time: "Manhã, após o café, 9h da manhã", status: "taken" },
+  { id: "furosemida", name: "Furosemida 40 mg", time: "Manhã, ao acordar, 8h", status: "taken" },
+  { id: "carvedilol", name: "Carvedilol 25 mg", time: "Manhã, após o café, 9h", status: "taken" },
   { id: "losartana", name: "Losartana 50 mg", time: "Almoço, 12h30", status: "pending" },
-  { id: "espironolactona", name: "Espironolactona 25 mg", time: "Noite, no jantar, 20h", status: "pending" },
+  {
+    id: "espironolactona",
+    name: "Espironolactona 25 mg",
+    time: "Noite, no jantar, 20h",
+    status: "pending",
+  },
 ];
 
 function PatientView() {
@@ -58,21 +78,38 @@ function PatientView() {
   const [picked, setPicked] = useState<Record<string, boolean>>({});
   const [sent, setSent] = useState(false);
   const [meds, setMeds] = useState<Medication[]>(INITIAL_MEDICATIONS);
-  const [pendingMedication, setPendingMedication] = useState<{ id: string; status: MedicationStatus } | null>(null);
+  const [pendingMedication, setPendingMedication] = useState<{
+    id: string;
+    status: MedicationStatus;
+  } | null>(null);
   const [weight, setWeight] = useState("74,2");
   const [draftWeight, setDraftWeight] = useState(weight);
   const [openWeight, setOpenWeight] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const status =
-    mood === "mal" ? { tone: "alert" as const, label: "Atenção", text: "Avisamos sua equipe. Eles vão entrar em contato." }
-    : mood === "mais_ou_menos" ? { tone: "warn" as const, label: "Fique atento", text: "Descanse, beba água e siga seus remédios." }
-    : { tone: "ok" as const, label: "Tudo bem", text: "Continue cuidando de você. Você está indo muito bem!" };
+    mood === "mal"
+      ? {
+          tone: "alert" as const,
+          label: "Atenção",
+          text: "Avisamos sua equipe. Eles vão entrar em contato.",
+        }
+      : mood === "mais_ou_menos"
+        ? {
+            tone: "warn" as const,
+            label: "Fique atento",
+            text: "Descanse, beba água e siga seus remédios.",
+          }
+        : {
+            tone: "ok" as const,
+            label: "Tudo bem",
+            text: "Continue cuidando de você. Você está indo muito bem!",
+          };
 
   const semaphore = {
-    ok:    { bg: "bg-success",  ring: "ring-success/30",  Icon: Smile,         emoji: "😊" },
-    warn:  { bg: "bg-warning",  ring: "ring-warning/30",  Icon: Meh,           emoji: "😐" },
-    alert: { bg: "bg-danger",   ring: "ring-danger/30",   Icon: Frown,         emoji: "😟" },
+    ok: { bg: "bg-success", ring: "ring-success/30", Icon: Smile, emoji: "😊" },
+    warn: { bg: "bg-warning", ring: "ring-warning/30", Icon: Meh, emoji: "😐" },
+    alert: { bg: "bg-danger", ring: "ring-danger/30", Icon: Frown, emoji: "😟" },
   }[status.tone];
   const SIcon = semaphore.Icon;
 
@@ -93,7 +130,9 @@ function PatientView() {
     if (!pendingMedication) return;
     const medication = meds.find((m) => m.id === pendingMedication.id);
     setMeds((current) =>
-      current.map((m) => (m.id === pendingMedication.id ? { ...m, status: pendingMedication.status } : m)),
+      current.map((m) =>
+        m.id === pendingMedication.id ? { ...m, status: pendingMedication.status } : m,
+      ),
     );
     setFeedback(
       `${medication?.name ?? "Remédio"} marcado como ${
@@ -113,8 +152,13 @@ function PatientView() {
   return (
     <AppShell profile="patient">
       {/* Greeting */}
-      <div className="mb-6 rounded-3xl border border-border p-6 md:p-8" style={{ background: "var(--gradient-hero)" }}>
-        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground/80">Olá, Dona Maria</p>
+      <div
+        className="mb-6 rounded-3xl border border-border p-6 md:p-8"
+        style={{ background: "var(--gradient-hero)" }}
+      >
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground/80">
+          Olá, Dona Maria
+        </p>
         <h1 className="mt-1 font-display text-3xl font-semibold text-primary-foreground md:text-4xl">
           Bom dia! Como você está hoje?
         </h1>
@@ -125,11 +169,13 @@ function PatientView() {
 
       {/* Mood picker — large, single decision */}
       <section className="mb-6 grid gap-4 sm:grid-cols-3">
-        {([
-          { key: "bem",            label: "Estou bem",        bg: "bg-success",  Icon: Smile },
-          { key: "mais_ou_menos",  label: "Mais ou menos",    bg: "bg-warning",  Icon: Meh },
-          { key: "mal",            label: "Não estou bem",    bg: "bg-danger",   Icon: Frown },
-        ] as const).map((o) => {
+        {(
+          [
+            { key: "bem", label: "Estou bem", bg: "bg-success", Icon: Smile },
+            { key: "mais_ou_menos", label: "Mais ou menos", bg: "bg-warning", Icon: Meh },
+            { key: "mal", label: "Não estou bem", bg: "bg-danger", Icon: Frown },
+          ] as const
+        ).map((o) => {
           const active = mood === o.key;
           const Icon = o.Icon;
           return (
@@ -137,10 +183,14 @@ function PatientView() {
               key={o.key}
               onClick={() => setMood(o.key)}
               className={`flex items-center gap-4 rounded-3xl border-2 p-5 text-left transition ${
-                active ? "border-foreground bg-card shadow-lg" : "border-border bg-card hover:border-foreground/40"
+                active
+                  ? "border-foreground bg-card shadow-lg"
+                  : "border-border bg-card hover:border-foreground/40"
               }`}
             >
-              <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl ${o.bg} text-white`}>
+              <span
+                className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl ${o.bg} text-white`}
+              >
                 <Icon className="h-9 w-9" strokeWidth={2.2} />
               </span>
               <span className="text-xl font-semibold">{o.label}</span>
@@ -151,12 +201,18 @@ function PatientView() {
 
       {/* Status banner */}
       {mood && (
-        <div className={`mb-6 flex items-center gap-4 rounded-3xl border-2 p-5 ${
-          status.tone === "alert" ? "border-danger/40 bg-danger/10"
-          : status.tone === "warn" ? "border-warning/40 bg-warning/10"
-          : "border-success/40 bg-success/10"
-        }`}>
-          <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${semaphore.bg} text-white ring-8 ${semaphore.ring}`}>
+        <div
+          className={`mb-6 flex items-center gap-4 rounded-3xl border-2 p-5 ${
+            status.tone === "alert"
+              ? "border-danger/40 bg-danger/10"
+              : status.tone === "warn"
+                ? "border-warning/40 bg-warning/10"
+                : "border-success/40 bg-success/10"
+          }`}
+        >
+          <span
+            className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${semaphore.bg} text-white ring-8 ${semaphore.ring}`}
+          >
             <SIcon className="h-7 w-7" />
           </span>
           <div>
@@ -211,10 +267,14 @@ function PatientView() {
                       key={s.key}
                       onClick={() => toggleSymptom(s.key)}
                       className={`flex items-center gap-3 rounded-2xl border-2 p-4 text-left transition ${
-                        on ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50"
+                        on
+                          ? "border-primary bg-primary/10"
+                          : "border-border bg-card hover:border-primary/50"
                       }`}
                     >
-                      <span className={`grid h-10 w-10 place-items-center rounded-xl ${on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      <span
+                        className={`grid h-10 w-10 place-items-center rounded-xl ${on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                      >
                         {s.icon}
                       </span>
                       <span className="text-base font-medium">{s.label}</span>
@@ -226,7 +286,12 @@ function PatientView() {
 
             {!sent && (
               <DialogFooter className="gap-2 sm:gap-2">
-                <Button variant="outline" size="lg" onClick={() => setOpenSymptoms(false)} className="text-base">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setOpenSymptoms(false)}
+                  className="text-base"
+                >
                   Cancelar
                 </Button>
                 <Button size="lg" onClick={submitSymptoms} className="text-base font-semibold">
@@ -243,9 +308,17 @@ function PatientView() {
             <CalendarDays className="h-5 w-5" /> Próxima consulta
           </div>
           <div className="mt-2 text-2xl font-semibold leading-tight">Quinta-feira, 23 de abril</div>
-          <div className="mt-1 text-lg">às <span className="font-semibold">14h30</span> com <span className="font-semibold">Dr. Lima</span></div>
-          <div className="mt-1 text-base text-muted-foreground">Hospital Universitário — sala 3</div>
-          <a href="tel:+551130000000" className="mt-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-foreground hover:bg-accent">
+          <div className="mt-1 text-lg">
+            às <span className="font-semibold">14h30</span> com{" "}
+            <span className="font-semibold">Dr. Lima</span>
+          </div>
+          <div className="mt-1 text-base text-muted-foreground">
+            Hospital Universitário — sala 3
+          </div>
+          <a
+            href="tel:+551130000000"
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-foreground hover:bg-accent"
+          >
             <Phone className="h-4 w-4" /> Ligar para a clínica
           </a>
         </div>
@@ -259,7 +332,7 @@ function PatientView() {
               <Pill className="h-6 w-6" />
             </span>
             <div>
-              <h2 className="text-xl font-semibold">Meus remédios de hoje</h2>
+              <h2 className="text-xl font-semibold">Meus remédios hoje</h2>
               <p className="text-base text-muted-foreground">Marque quando tomar</p>
             </div>
           </div>
@@ -276,8 +349,9 @@ function PatientView() {
                 }`}
               >
                 <div>
-                  <div className="text-lg font-semibold">{m.name}</div>
-                  <div className="mt-1 text-xl font-semibold text-foreground/85">{m.time}</div>
+                  <div className="text-2xl font-semibold leading-tight text-foreground">
+                    {m.name} - {m.time}
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 sm:w-64">
                   <button
@@ -314,11 +388,14 @@ function PatientView() {
             <h2 className="text-xl font-semibold">Meu peso hoje</h2>
           </div>
           <div className="rounded-2xl bg-secondary/60 p-4 text-center">
-            <div className="font-display text-5xl font-semibold">{weight} <span className="text-2xl text-muted-foreground">kg</span></div>
+            <div className="font-display text-5xl font-semibold">
+              {weight} <span className="text-2xl text-muted-foreground">kg</span>
+            </div>
             <div className="mt-1 text-sm text-success font-medium">Atualizado hoje</div>
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
-            Se subir <span className="font-semibold text-foreground">mais de 2 kg em 3 dias</span>, ligue para sua equipe.
+            Se subir <span className="font-semibold text-foreground">mais de 2 kg em 3 dias</span>,
+            ligue para sua equipe.
           </p>
           <button
             onClick={() => {
@@ -341,15 +418,19 @@ function PatientView() {
           </div>
           <div className="rounded-2xl border border-border bg-secondary/40 p-4">
             <p className="text-base leading-relaxed">
-              <span className="font-semibold">Enf. Carla:</span> Dona Maria, lembre-se de tomar a Losartana no almoço.
-              Estamos acompanhando você. Qualquer coisa, pode chamar a gente! 💚
+              <span className="font-semibold">Enf. Carla:</span> Dona Maria, lembre-se de tomar a
+              Losartana no almoço. Estamos acompanhando você. Qualquer coisa, pode chamar a gente!
+              💚
             </p>
             <p className="mt-2 text-sm text-muted-foreground">Hoje, 09h12</p>
           </div>
         </div>
       </section>
 
-      <Dialog open={!!pendingMedication} onOpenChange={(open) => !open && setPendingMedication(null)}>
+      <Dialog
+        open={!!pendingMedication}
+        onOpenChange={(open) => !open && setPendingMedication(null)}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-2xl">Confirmar remédio</DialogTitle>
@@ -362,7 +443,12 @@ function PatientView() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" size="lg" onClick={() => setPendingMedication(null)} className="text-base">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setPendingMedication(null)}
+              className="text-base"
+            >
               Voltar
             </Button>
             <Button size="lg" onClick={confirmMedication} className="text-base font-semibold">
@@ -391,7 +477,12 @@ function PatientView() {
             />
           </label>
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" size="lg" onClick={() => setOpenWeight(false)} className="text-base">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setOpenWeight(false)}
+              className="text-base"
+            >
               Cancelar
             </Button>
             <Button size="lg" onClick={saveWeight} className="text-base font-semibold">
