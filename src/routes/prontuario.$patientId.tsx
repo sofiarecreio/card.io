@@ -204,6 +204,7 @@ function PatientRecordPage() {
     exameFisico: { updated: "10/04/2026", status: "completo" },
     avaliacaoFuncional: { updated: "03/04/2026", status: "parcial" },
     autocuidado: { updated: "14/04/2026", status: "completo" },
+    qualidadeVida: { updated: "14/04/2026", status: "parcial" },
   }));
   const [activeFormKey, setActiveFormKey] = useState<ClinicalFormKey | null>(null);
   const [formDraft, setFormDraft] = useState<FormDraft | null>(null);

@@ -5,7 +5,8 @@ export type ClinicalFormKey =
   | "ecocardiograma"
   | "exameFisico"
   | "avaliacaoFuncional"
-  | "autocuidado";
+  | "autocuidado"
+  | "qualidadeVida";
 
 export type ClinicalFieldValue = string | string[];
 
@@ -98,6 +99,101 @@ const symptomSpeedOptions: ClinicalOption[] = [
   { value: "Moderadamente rápido", label: "Moderadamente rápido" },
   { value: "Rapidamente", label: "Rapidamente" },
   { value: "Muito rapidamente", label: "Muito rapidamente" },
+];
+
+const qualityPhysicalLimitationOptions: ClinicalOption[] = [
+  { value: "Limitou muitíssimo", label: "Limitou muitíssimo" },
+  { value: "Limitou bastante", label: "Limitou bastante" },
+  { value: "Limitou um pouco", label: "Limitou um pouco" },
+  { value: "Não limitou", label: "Não limitou" },
+  {
+    value: "Limitado por outras razões ou não fez",
+    label: "Fui limitado(a) por outras razões ou não fiz tal atividade",
+  },
+];
+
+const qualitySymptomChangeOptions: ClinicalOption[] = [
+  { value: "Muito piores", label: "Muito piores" },
+  { value: "Um pouco piores", label: "Um pouco piores" },
+  { value: "Não mudaram", label: "Não mudaram" },
+  { value: "Um pouco melhores", label: "Um pouco melhores" },
+  { value: "Muito melhores", label: "Muito melhores" },
+  {
+    value: "Não tive sintomas nas 2 últimas semanas",
+    label: "Não tive nenhum sintoma nas 2 últimas semanas",
+  },
+];
+
+const qualityFrequencyOptions: ClinicalOption[] = [
+  { value: "O tempo todo", label: "O tempo todo" },
+  { value: "Várias vezes por dia", label: "Várias vezes por dia" },
+  { value: "Pelo menos 1 vez por dia", label: "Pelo menos 1 vez por dia" },
+  {
+    value: "3 ou mais vezes por semana",
+    label: "3 ou mais vezes por semana, porém não todos os dias",
+  },
+  { value: "1-2 vezes por semana", label: "1-2 vezes por semana" },
+  { value: "Menos de 1 vez por semana", label: "Menos de 1 vez por semana" },
+  { value: "Nenhuma vez nas 2 últimas semanas", label: "Nenhuma vez nas 2 últimas semanas" },
+];
+
+const qualityNightFrequencyOptions: ClinicalOption[] = [
+  { value: "Todas as noites", label: "Todas as noites" },
+  {
+    value: "3 ou mais vezes por semana",
+    label: "3 ou mais vezes por semana, porém não todas as noites",
+  },
+  { value: "1-2 vezes por semana", label: "1-2 vezes por semana" },
+  { value: "Menos de 1 vez por semana", label: "Menos de 1 vez por semana" },
+  { value: "Nenhuma vez nas 2 últimas semanas", label: "Nenhuma vez nas 2 últimas semanas" },
+];
+
+const qualityBotherOptions: ClinicalOption[] = [
+  { value: "Incomodou muitíssimo", label: "Incomodou muitíssimo" },
+  { value: "Incomodou bastante", label: "Incomodou bastante" },
+  { value: "Incomodou um pouco", label: "Incomodou um pouco" },
+  { value: "Incomodou muito pouco", label: "Incomodou muito pouco" },
+  { value: "Não me incomodou", label: "Não me incomodou" },
+];
+
+const qualityCertaintyOptions: ClinicalOption[] = [
+  { value: "Certeza nenhuma", label: "Certeza nenhuma" },
+  { value: "Pouca certeza", label: "Pouca certeza" },
+  { value: "Alguma certeza", label: "Alguma certeza" },
+  { value: "Bastante certeza", label: "Bastante certeza" },
+  { value: "Certeza total", label: "Certeza total" },
+];
+
+const qualityKnowledgeOptions: ClinicalOption[] = [
+  { value: "Não sei nada", label: "Não sei nada" },
+  { value: "Sei pouco", label: "Sei pouco" },
+  { value: "Sei mais ou menos", label: "Sei mais ou menos" },
+  { value: "Sei bastante", label: "Sei bastante" },
+  { value: "Sei tudo", label: "Sei tudo" },
+];
+
+const qualityLifeImpactOptions: ClinicalOption[] = [
+  { value: "Impediu muitíssimo", label: "Impediu muitíssimo" },
+  { value: "Impediu bastante", label: "Impediu bastante" },
+  { value: "Impediu um pouco", label: "Impediu um pouco" },
+  { value: "Impediu muito pouco", label: "Impediu muito pouco" },
+  { value: "Não me impediu em nada", label: "Não me impediu em nada" },
+];
+
+const qualitySatisfactionOptions: ClinicalOption[] = [
+  { value: "Totalmente insatisfeito(a)", label: "Totalmente insatisfeito(a)" },
+  { value: "Bastante insatisfeito(a)", label: "Bastante insatisfeito(a)" },
+  { value: "Um pouco satisfeito(a)", label: "Um pouco satisfeito(a)" },
+  { value: "Bastante satisfeito(a)", label: "Bastante satisfeito(a)" },
+  { value: "Totalmente satisfeito(a)", label: "Totalmente satisfeito(a)" },
+];
+
+const qualityMoodFrequencyOptions: ClinicalOption[] = [
+  { value: "O tempo todo", label: "O tempo todo" },
+  { value: "A maior parte do tempo", label: "A maior parte do tempo" },
+  { value: "De vez em quando", label: "De vez em quando" },
+  { value: "Quase nunca", label: "Quase nunca" },
+  { value: "Nunca", label: "Nunca" },
 ];
 
 function radioField(id: string, label: string, options = yesNoOptions): ClinicalField {
@@ -832,6 +928,177 @@ export const clinicalFormTemplates: ClinicalFormTemplate[] = [
       },
     ],
   },
+  {
+    key: "qualidadeVida",
+    name: "Qualidade de Vida",
+    short: "Limitação física, sintomas, autoeficácia, satisfação e impacto social",
+    source: "QualidadeDeVida_UniversalCardI (1).pdf",
+    sections: [
+      {
+        id: "limitacaoFisica",
+        title: "Limitação física nas 2 últimas semanas",
+        description:
+          "Indique o quanto a insuficiência cardíaca, como falta de ar ou cansaço, limitou cada atividade.",
+        fields: [
+          radioField("qvVestir", "Vestir-se", qualityPhysicalLimitationOptions),
+          radioField("qvBanho", "Tomar banho", qualityPhysicalLimitationOptions),
+          radioField(
+            "qvQuarteirao",
+            "Caminhar um quarteirão em terreno plano",
+            qualityPhysicalLimitationOptions,
+          ),
+          radioField(
+            "qvCasaCompras",
+            "Trabalhar no jardim, limpar a casa ou carregar compras do supermercado",
+            qualityPhysicalLimitationOptions,
+          ),
+          radioField(
+            "qvEscadas",
+            "Subir um andar pelas escadas sem parar",
+            qualityPhysicalLimitationOptions,
+          ),
+          radioField(
+            "qvCorrerApressado",
+            "Correr ou andar apressadamente",
+            qualityPhysicalLimitationOptions,
+          ),
+        ],
+      },
+      {
+        id: "mudancaSintomas",
+        title: "Mudança dos sintomas",
+        fields: [
+          radioField(
+            "qvMudancaSintomas",
+            "Comparando com 2 semanas atrás, seus sintomas de insuficiência cardíaca mudaram?",
+            qualitySymptomChangeOptions,
+          ),
+        ],
+      },
+      {
+        id: "edema",
+        title: "Inchaço em pés, tornozelos ou pernas",
+        fields: [
+          radioField(
+            "qvEdemaFrequencia",
+            "Nas 2 últimas semanas, quantas vezes acordou de manhã com pés, tornozelos ou pernas inchadas?",
+            qualityFrequencyOptions,
+          ),
+          radioField(
+            "qvEdemaIncomodo",
+            "Nas 2 últimas semanas, o quanto pés, tornozelos ou pernas inchadas incomodaram você?",
+            [
+              ...qualityBotherOptions,
+              {
+                value: "Não tive pés, tornozelos ou pernas inchadas",
+                label: "Não tive pés, tornozelos ou pernas inchadas",
+              },
+            ],
+          ),
+        ],
+      },
+      {
+        id: "cansacoDispneia",
+        title: "Cansaço, falta de ar e ortopneia",
+        fields: [
+          radioField(
+            "qvCansacoFrequencia",
+            "Nas 2 últimas semanas, em média, quantas vezes o cansaço limitou sua capacidade de fazer o que queria?",
+            qualityFrequencyOptions,
+          ),
+          radioField(
+            "qvCansacoIncomodo",
+            "Nas 2 últimas semanas, o quanto seu cansaço incomodou você?",
+            [...qualityBotherOptions, { value: "Não tive cansaço", label: "Não tive cansaço" }],
+          ),
+          radioField(
+            "qvFaltaArFrequencia",
+            "Nas 2 últimas semanas, em média, quantas vezes a falta de ar limitou sua capacidade de fazer o que queria?",
+            qualityFrequencyOptions,
+          ),
+          radioField(
+            "qvFaltaArIncomodo",
+            "Nas 2 últimas semanas, o quanto a falta de ar incomodou você?",
+            [
+              ...qualityBotherOptions,
+              { value: "Não tive falta de ar", label: "Não tive falta de ar" },
+            ],
+          ),
+          radioField(
+            "qvDormirSentado",
+            "Nas 2 últimas semanas, quantas vezes precisou dormir sentado(a) ou com pelo menos 3 travesseiros por falta de ar?",
+            qualityNightFrequencyOptions,
+          ),
+        ],
+      },
+      {
+        id: "autoeficacia",
+        title: "Autoeficácia",
+        fields: [
+          radioField(
+            "qvSabeQuemChamar",
+            "Você tem certeza de que sabe o que fazer ou quem chamar se a insuficiência cardíaca piorar?",
+            qualityCertaintyOptions,
+          ),
+          radioField(
+            "qvSabeEvitarPiora",
+            "Você sabe o que fazer para evitar que seus sintomas piorem, como pesar regularmente e dieta com pouco sal?",
+            qualityKnowledgeOptions,
+          ),
+        ],
+      },
+      {
+        id: "qualidadeVidaGlobal",
+        title: "Qualidade de vida global",
+        fields: [
+          radioField(
+            "qvAproveitarVida",
+            "Nas 2 últimas semanas, o quanto a insuficiência cardíaca impediu que você aproveitasse a vida?",
+            qualityLifeImpactOptions,
+          ),
+          radioField(
+            "qvSatisfacaoVida",
+            "Se tivesse que passar o resto da vida com a insuficiência cardíaca como ela está agora, como se sentiria?",
+            qualitySatisfactionOptions,
+          ),
+          radioField(
+            "qvDesanimoDepressao",
+            "Nas 2 últimas semanas, com que frequência se sentiu desanimado(a) ou deprimido(a) por causa da insuficiência cardíaca?",
+            qualityMoodFrequencyOptions,
+          ),
+        ],
+      },
+      {
+        id: "impactoSocial",
+        title: "Rotina, hábitos e participação social",
+        description:
+          "Indique o quanto a insuficiência cardíaca limitou sua participação nas atividades abaixo nas 2 últimas semanas.",
+        fields: [
+          radioField(
+            "qvPassatempos",
+            "Passatempos ou atividades recreativas",
+            qualityPhysicalLimitationOptions,
+          ),
+          radioField(
+            "qvTrabalhoDomestico",
+            "Trabalho ou tarefa doméstica",
+            qualityPhysicalLimitationOptions,
+          ),
+          radioField(
+            "qvVisitarFamiliaAmigos",
+            "Visitar parentes ou amigos",
+            qualityPhysicalLimitationOptions,
+          ),
+          radioField(
+            "qvRelacionamentoIntimo",
+            "Relacionamentos íntimos ou sexuais",
+            qualityPhysicalLimitationOptions,
+          ),
+          textareaField("qvObservacoes", "Observações da equipe sobre qualidade de vida"),
+        ],
+      },
+    ],
+  },
 ];
 
 export const clinicalFormMetaDefaults: Record<ClinicalFormKey, ClinicalFormMeta> = {
@@ -842,6 +1109,7 @@ export const clinicalFormMetaDefaults: Record<ClinicalFormKey, ClinicalFormMeta>
   exameFisico: { updated: "20/05/2026", status: "pendente" },
   avaliacaoFuncional: { updated: "20/05/2026", status: "pendente" },
   autocuidado: { updated: "20/05/2026", status: "pendente" },
+  qualidadeVida: { updated: "20/05/2026", status: "pendente" },
 };
 
 export type ClinicalPrefillPatient = {
@@ -1011,6 +1279,34 @@ export function createPrefilledClinicalFormsState(patient: ClinicalPrefillPatien
       auto31: "Estou confiante",
       auto35: "Estou um pouco confiante",
       auto36: "Estou um pouco confiante",
+    },
+    qualidadeVida: {
+      ...base.qualidadeVida,
+      qvVestir: "Limitou um pouco",
+      qvBanho: "Limitou um pouco",
+      qvQuarteirao: "Limitou bastante",
+      qvCasaCompras: "Limitou bastante",
+      qvEscadas: "Limitou muitíssimo",
+      qvCorrerApressado: "Limitou muitíssimo",
+      qvMudancaSintomas: "Um pouco piores",
+      qvEdemaFrequencia: "3 ou mais vezes por semana",
+      qvEdemaIncomodo: "Incomodou bastante",
+      qvCansacoFrequencia: "Pelo menos 1 vez por dia",
+      qvCansacoIncomodo: "Incomodou bastante",
+      qvFaltaArFrequencia: "Pelo menos 1 vez por dia",
+      qvFaltaArIncomodo: "Incomodou bastante",
+      qvDormirSentado: "1-2 vezes por semana",
+      qvSabeQuemChamar: "Alguma certeza",
+      qvSabeEvitarPiora: "Sei mais ou menos",
+      qvAproveitarVida: "Impediu bastante",
+      qvSatisfacaoVida: "Bastante insatisfeito(a)",
+      qvDesanimoDepressao: "De vez em quando",
+      qvPassatempos: "Limitou bastante",
+      qvTrabalhoDomestico: "Limitou bastante",
+      qvVisitarFamiliaAmigos: "Limitou um pouco",
+      qvRelacionamentoIntimo: "Limitado por outras razões ou não fez",
+      qvObservacoes:
+        "Paciente relata impacto funcional e social relevante, com piora recente de cansaço e dispneia.",
     },
   } satisfies ClinicalFormsState;
 }
