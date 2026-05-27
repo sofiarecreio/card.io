@@ -57,10 +57,8 @@ import {
   Edit3,
   FileText,
   HeartPulse,
-  MessageSquare,
   Pill,
   Scale,
-  Send,
   Stethoscope,
   Trash2,
   TrendingDown,
@@ -81,7 +79,7 @@ const tooltipStyle = {
   background: "var(--card)",
   border: "1px solid var(--border)",
   borderRadius: 12,
-  fontSize: 12,
+  fontSize: 14,
   boxShadow: "var(--shadow-card)",
 };
 
@@ -212,8 +210,6 @@ function PatientRecordPage() {
   const [deletedForms, setDeletedForms] = useState<ClinicalFormKey[]>([]);
   const [confirmFormSaveOpen, setConfirmFormSaveOpen] = useState(false);
   const [confirmFormDeleteOpen, setConfirmFormDeleteOpen] = useState(false);
-  const [messageDraft, setMessageDraft] = useState("");
-  const [messageFeedback, setMessageFeedback] = useState<string | null>(null);
   const [activeAction, setActiveAction] = useState<SuggestedAction | null>(null);
   const [actionNote, setActionNote] = useState("");
   const [appointmentDate, setAppointmentDate] = useState(() => getTodayIsoDate());
@@ -255,18 +251,6 @@ function PatientRecordPage() {
   const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [confirmProfileSaveOpen, setConfirmProfileSaveOpen] = useState(false);
   const [confirmRecordDeleteOpen, setConfirmRecordDeleteOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      author: "Enf. Carla",
-      text: "Dona Maria, lembre-se de tomar a Losartana no almoço e registrar o peso hoje.",
-      time: "Hoje, 09h12",
-    },
-    {
-      author: "Dr. Henrique Lima",
-      text: "Vamos revisar sua pressão na próxima consulta. Mantenha os registros diários.",
-      time: "Ontem, 17h40",
-    },
-  ]);
 
   const calendarStorageKey = `cardio-calendar:${viewerProfessional}`;
 
@@ -332,22 +316,6 @@ function PatientRecordPage() {
     };
     return current;
   }, [clinicalForms, patient.age, patient.name, profileDraft, sourcePatient.id]);
-
-  function sendMessage() {
-    const text = messageDraft.trim();
-    if (!text) return;
-
-    setMessages((current) => [
-      {
-        author: profileDraft.responsible,
-        text,
-        time: "Agora",
-      },
-      ...current,
-    ]);
-    setMessageDraft("");
-    setMessageFeedback("Recado enviado para o paciente.");
-  }
 
   function openProfileEdit() {
     setProfileWorkingDraft(profileDraft);
@@ -466,7 +434,7 @@ function PatientRecordPage() {
       feedback = `Agenda de ${viewerProfessional}: ${appointmentMode.toLowerCase()} para ${
         patient.name
       } em ${formatBrazilianDate(appointmentDate)} às ${appointmentTime}. ${
-        note || "Paciente será avisado pelo recado da equipe."
+        note || "Agendamento registrado no historico clinico da equipe."
       }`;
     } else if (activeAction === "review") {
       feedback = `Revisão de evolução aberta para ${profileDraft.responsible}: ${selectedReviewItems.join(
@@ -487,21 +455,23 @@ function PatientRecordPage() {
   if (recordDeleted) {
     return (
       <AppShell profile="team">
-        <div className="rounded-3xl border border-danger/25 bg-danger/5 p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-danger">
-            Prontuário excluído
-          </p>
-          <h1 className="mt-2 font-display text-3xl font-semibold">{profileDraft.name}</h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            A exclusão foi aplicada nesta sessão após confirmação. Volte ao dashboard para seguir
-            com outros pacientes.
-          </p>
-          <Link
-            to="/equipe"
-            className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
-          >
-            Voltar ao dashboard
-          </Link>
+        <div className="large-route-type">
+          <div className="rounded-3xl border border-danger/25 bg-danger/5 p-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-danger">
+              Prontuário excluído
+            </p>
+            <h1 className="mt-2 font-display text-3xl font-semibold">{profileDraft.name}</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              A exclusão foi aplicada nesta sessão após confirmação. Volte ao dashboard para seguir
+              com outros pacientes.
+            </p>
+            <Link
+              to="/equipe"
+              className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
+            >
+              Voltar ao dashboard
+            </Link>
+          </div>
         </div>
       </AppShell>
     );
@@ -509,549 +479,510 @@ function PatientRecordPage() {
 
   return (
     <AppShell profile="team">
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <Link
-            to="/equipe"
-            className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Voltar ao dashboard
-          </Link>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Prontuário detalhado
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">
-            {patient.name}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {patient.id} · {patient.age} anos · responsável: {profileDraft.responsible}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <RiskBadge risk={patient.risk} />
-          <Button variant="outline" size="sm" onClick={openProfileEdit} className="rounded-full">
-            <Edit3 className="h-4 w-4" />
-            Editar perfil
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setConfirmRecordDeleteOpen(true)}
-            className="rounded-full text-danger hover:text-danger"
-          >
-            <Trash2 className="h-4 w-4" />
-            Excluir prontuário
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-5 lg:grid-cols-12">
-        <BiCard
-          className="lg:col-span-12"
-          title="Resumo do prontuário"
-          subtitle="Dados clínicos mais relevantes para decisão rápida"
-          accent={
-            patient.risk === "high" ? "danger" : patient.risk === "medium" ? "warning" : "success"
-          }
-        >
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <RecordMetric
-              icon={<HeartPulse className="h-4 w-4" />}
-              label="FC atual"
-              value={`${patient.hr} bpm`}
-            />
-            <RecordMetric
-              icon={<Scale className="h-4 w-4" />}
-              label="Peso"
-              value={`${profileDraft.weight} kg`}
-            />
-            <RecordMetric
-              icon={<Activity className="h-4 w-4" />}
-              label="Autocuidado"
-              value={`${patient.selfCare}%`}
-            />
-            <RecordMetric
-              icon={<Pill className="h-4 w-4" />}
-              label="Adesão"
-              value={`${patient.adherence}%`}
-            />
+      <div className="large-route-type">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <Link
+              to="/equipe"
+              className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Voltar ao dashboard
+            </Link>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              Prontuário detalhado
+            </p>
+            <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">
+              {patient.name}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {patient.id} · {patient.age} anos · responsável: {profileDraft.responsible}
+            </p>
           </div>
-          <div className="mt-4 grid gap-4 lg:grid-cols-3">
-            <InfoPanel title="Resumo clínico">
-              Paciente com risco {riskLabels[patient.risk].toLowerCase()}, FE {patient.fe}%, SpO2{" "}
-              {patient.spo2}% e última resposta {patient.lastResponse}. Priorizar revisão de
-              sintomas e ganho ponderal recente.
-            </InfoPanel>
-            <InfoPanel title="Responsável">
-              <span className="inline-flex items-center gap-2 font-semibold">
-                <UserCheck className="h-4 w-4 text-primary" />
-                {profileDraft.responsible}
-              </span>
-            </InfoPanel>
-            <InfoPanel title="Ações sugeridas">
-              <div className="flex flex-wrap gap-2">
-                <ActionPill
-                  icon={<CalendarDays className="h-3.5 w-3.5" />}
-                  label="Agendar consulta"
-                  onClick={() => setActiveAction("appointment")}
-                />
-                <ActionPill
-                  icon={<Stethoscope className="h-3.5 w-3.5" />}
-                  label="Revisar evolução"
-                  onClick={() => setActiveAction("review")}
-                />
-                <ActionPill
-                  icon={<TrendingDown className="h-3.5 w-3.5" />}
-                  label="Checar piora"
-                  onClick={() => setActiveAction("worsening")}
-                />
-              </div>
-              {actionFeedback && (
-                <div className="mt-3 text-xs font-semibold text-success">{actionFeedback}</div>
-              )}
-            </InfoPanel>
+          <div className="flex flex-wrap items-center gap-2">
+            <RiskBadge risk={patient.risk} />
+            <Button variant="outline" size="sm" onClick={openProfileEdit} className="rounded-full">
+              <Edit3 className="h-4 w-4" />
+              Editar perfil
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmRecordDeleteOpen(true)}
+              className="rounded-full text-danger hover:text-danger"
+            >
+              <Trash2 className="h-4 w-4" />
+              Excluir prontuário
+            </Button>
           </div>
-        </BiCard>
+        </div>
 
-        <BiCard
-          className="lg:col-span-12"
-          title="Recados para o paciente"
-          subtitle="Mensagens enviadas pela equipe assistencial"
-        >
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-            <div className="rounded-2xl border border-border bg-secondary/25 p-4">
-              <label className="text-sm font-semibold">
-                Novo recado
-                <textarea
-                  value={messageDraft}
-                  onChange={(event) => setMessageDraft(event.target.value)}
-                  className="mt-2 min-h-32 w-full resize-none rounded-2xl border border-border bg-background p-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder={`Mensagem para ${patient.name}`}
-                />
-              </label>
-              <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                {messageFeedback && (
-                  <div className="flex items-center gap-2 text-sm font-semibold text-success">
-                    <MessageSquare className="h-4 w-4" />
-                    {messageFeedback}
-                  </div>
-                )}
-                <Button onClick={sendMessage} className="rounded-full sm:ml-auto">
-                  <Send className="h-4 w-4" />
-                  Enviar recado
-                </Button>
-              </div>
+        <div className="grid gap-5 lg:grid-cols-12">
+          <BiCard
+            className="lg:col-span-12"
+            title="Resumo do prontuário"
+            subtitle="Dados clínicos mais relevantes para decisão rápida"
+            accent={
+              patient.risk === "high" ? "danger" : patient.risk === "medium" ? "warning" : "success"
+            }
+          >
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <RecordMetric
+                icon={<HeartPulse className="h-4 w-4" />}
+                label="FC atual"
+                value={`${patient.hr} bpm`}
+              />
+              <RecordMetric
+                icon={<Scale className="h-4 w-4" />}
+                label="Peso"
+                value={`${profileDraft.weight} kg`}
+              />
+              <RecordMetric
+                icon={<Activity className="h-4 w-4" />}
+                label="Autocuidado"
+                value={`${patient.selfCare}%`}
+              />
+              <RecordMetric
+                icon={<Pill className="h-4 w-4" />}
+                label="Adesão"
+                value={`${patient.adherence}%`}
+              />
             </div>
-            <div className="space-y-3">
-              {messages.map((message, index) => (
+            <div className="mt-4 grid gap-4 lg:grid-cols-3">
+              <InfoPanel title="Resumo clínico">
+                Paciente com risco {riskLabels[patient.risk].toLowerCase()}, FE {patient.fe}%, SpO2{" "}
+                {patient.spo2}% e última resposta {patient.lastResponse}. Priorizar revisão de
+                sintomas e ganho ponderal recente.
+              </InfoPanel>
+              <InfoPanel title="Responsável">
+                <span className="inline-flex items-center gap-2 font-semibold">
+                  <UserCheck className="h-4 w-4 text-primary" />
+                  {profileDraft.responsible}
+                </span>
+              </InfoPanel>
+              <InfoPanel title="Ações sugeridas">
+                <div className="flex flex-wrap gap-2">
+                  <ActionPill
+                    icon={<CalendarDays className="h-3.5 w-3.5" />}
+                    label="Agendar consulta"
+                    onClick={() => setActiveAction("appointment")}
+                  />
+                  <ActionPill
+                    icon={<Stethoscope className="h-3.5 w-3.5" />}
+                    label="Revisar evolução"
+                    onClick={() => setActiveAction("review")}
+                  />
+                  <ActionPill
+                    icon={<TrendingDown className="h-3.5 w-3.5" />}
+                    label="Checar piora"
+                    onClick={() => setActiveAction("worsening")}
+                  />
+                </div>
+                {actionFeedback && (
+                  <div className="mt-3 text-xs font-semibold text-success">{actionFeedback}</div>
+                )}
+              </InfoPanel>
+            </div>
+          </BiCard>
+
+          <BiCard
+            className="lg:col-span-12"
+            title="Histórico e ações clínicas"
+            subtitle="Registro das ações executadas neste prontuário"
+          >
+            <div className="grid gap-3 md:grid-cols-2">
+              {clinicalHistory.map((item, index) => (
                 <div
-                  key={`${message.author}-${message.time}-${index}`}
-                  className="rounded-2xl border border-border bg-card p-4"
+                  key={`${item}-${index}`}
+                  className="rounded-2xl border border-border bg-secondary/25 p-4 text-sm"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="font-semibold">{message.author}</div>
-                    <div className="text-xs text-muted-foreground">{message.time}</div>
+                  <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Evento {clinicalHistory.length - index}
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {message.text}
-                  </p>
+                  {item}
                 </div>
               ))}
             </div>
-          </div>
-        </BiCard>
+          </BiCard>
 
-        <BiCard
-          className="lg:col-span-12"
-          title="Histórico e ações clínicas"
-          subtitle="Registro das ações executadas neste prontuário"
-        >
-          <div className="grid gap-3 md:grid-cols-2">
-            {clinicalHistory.map((item, index) => (
-              <div
-                key={`${item}-${index}`}
-                className="rounded-2xl border border-border bg-secondary/25 p-4 text-sm"
-              >
-                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Evento {clinicalHistory.length - index}
-                </div>
-                {item}
-              </div>
-            ))}
-          </div>
-        </BiCard>
+          <BiCard
+            className="lg:col-span-12"
+            title="Evolução de indicadores"
+            subtitle="Frequência cardíaca, peso e adesão no acompanhamento longitudinal"
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  yAxisId="left"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend wrapperStyle={{ fontSize: 13 }} />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="hr"
+                  name="FC bpm"
+                  stroke="var(--danger)"
+                  strokeWidth={2.5}
+                  dot={{ r: 3 }}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="weight"
+                  name="Peso kg"
+                  stroke="var(--primary)"
+                  strokeWidth={2.5}
+                  dot={{ r: 3 }}
+                />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="adherence"
+                  name="Adesão %"
+                  stroke="var(--success)"
+                  strokeWidth={2.5}
+                  dot={{ r: 3 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </BiCard>
 
-        <BiCard
-          className="lg:col-span-12"
-          title="Evolução de indicadores"
-          subtitle="Frequência cardíaca, peso e adesão no acompanhamento longitudinal"
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                yAxisId="left"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="hr"
-                name="FC bpm"
-                stroke="var(--danger)"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="weight"
-                name="Peso kg"
-                stroke="var(--primary)"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-              />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="adherence"
-                name="Adesão %"
-                stroke="var(--success)"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </BiCard>
+          <BiCard
+            className="lg:col-span-12"
+            title="Formulários clínicos & anamneses"
+            subtitle={`Universal CardIO 2.0 · ${patient.name} (${patient.id}, ${patient.age} anos)`}
+          >
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {availableForms.map((template) => (
+                <ClinicalFormCard
+                  key={template.key}
+                  template={template}
+                  values={syncedClinicalForms[template.key]}
+                  meta={formMeta[template.key]}
+                  onOpen={() => setActiveFormKey(template.key)}
+                />
+              ))}
+            </div>
+          </BiCard>
+        </div>
 
-        <BiCard
-          className="lg:col-span-12"
-          title="Formulários clínicos & anamneses"
-          subtitle={`Universal CardIO 2.0 · ${patient.name} (${patient.id}, ${patient.age} anos)`}
-        >
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {availableForms.map((template) => (
-              <ClinicalFormCard
-                key={template.key}
-                template={template}
-                values={syncedClinicalForms[template.key]}
-                meta={formMeta[template.key]}
-                onOpen={() => setActiveFormKey(template.key)}
-              />
-            ))}
-          </div>
-        </BiCard>
-      </div>
-
-      <Dialog open={!!activeFormKey} onOpenChange={(open) => !open && setActiveFormKey(null)}>
-        <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">
-          {activeTemplate && activeFormKey && activeMeta && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="font-display text-xl">{activeTemplate.name}</DialogTitle>
-                <DialogDescription>
-                  {patient.name} · {patient.id} · atualizado em {activeMeta.updated} ·{" "}
-                  {activeTemplate.source}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={() => openFormEdit(activeFormKey)}>
-                  <Edit3 className="h-4 w-4" />
-                  Editar formulário
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setFormPendingDelete(activeFormKey);
-                    setConfirmFormDeleteOpen(true);
-                  }}
-                  className="text-danger hover:text-danger"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Excluir formulário
-                </Button>
-              </div>
-              <ClinicalFormRenderer
-                template={activeTemplate}
-                values={syncedClinicalForms[activeFormKey]}
-                readOnly
-              />
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={profileEditOpen} onOpenChange={setProfileEditOpen}>
-        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar perfil e prontuário</DialogTitle>
-            <DialogDescription>
-              Atualize dados do paciente e confirme antes de aplicar ao prontuário.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-3 md:grid-cols-2">
-            <ProfileField
-              label="Nome"
-              value={profileWorkingDraft.name}
-              onChange={(value) => updateProfileDraft("name", value)}
-            />
-            <ProfileField
-              label="Idade"
-              value={profileWorkingDraft.age}
-              onChange={(value) => updateProfileDraft("age", value)}
-            />
-            <label className="block text-sm font-medium">
-              Risco
-              <select
-                value={profileWorkingDraft.risk}
-                onChange={(event) =>
-                  updateProfileDraft("risk", event.target.value as Patient["risk"])
-                }
-                className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="low">Baixo</option>
-                <option value="medium">Moderado</option>
-                <option value="high">Alto</option>
-              </select>
-            </label>
-            <ProfileField
-              label="Responsável"
-              value={profileWorkingDraft.responsible}
-              onChange={(value) => updateProfileDraft("responsible", value)}
-            />
-            <ProfileField
-              label="FC"
-              value={profileWorkingDraft.hr}
-              onChange={(value) => updateProfileDraft("hr", value)}
-            />
-            <ProfileField
-              label="Peso"
-              value={profileWorkingDraft.weight}
-              onChange={(value) => updateProfileDraft("weight", value)}
-            />
-            <ProfileField
-              label="Autocuidado"
-              value={profileWorkingDraft.selfCare}
-              onChange={(value) => updateProfileDraft("selfCare", value)}
-            />
-            <ProfileField
-              label="Adesão"
-              value={profileWorkingDraft.adherence}
-              onChange={(value) => updateProfileDraft("adherence", value)}
-            />
-            <ProfileField
-              label="PA"
-              value={profileWorkingDraft.bp}
-              onChange={(value) => updateProfileDraft("bp", value)}
-            />
-            <ProfileField
-              label="SpO2"
-              value={profileWorkingDraft.spo2}
-              onChange={(value) => updateProfileDraft("spo2", value)}
-            />
-            <ProfileField
-              label="FEVE"
-              value={profileWorkingDraft.fe}
-              onChange={(value) => updateProfileDraft("fe", value)}
-            />
-            <ProfileField
-              label="VO2"
-              value={profileWorkingDraft.vo2}
-              onChange={(value) => updateProfileDraft("vo2", value)}
-            />
-          </div>
-          <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={() => setProfileEditOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={() => setConfirmProfileSaveOpen(true)}>Salvar alterações</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!formDraft} onOpenChange={(open) => !open && setFormDraft(null)}>
-        <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto rounded-2xl">
-          {formDraft && getClinicalTemplate(formDraft.key) && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Editar formulário clínico</DialogTitle>
-                <DialogDescription>
-                  Ajuste as perguntas e confirme antes de atualizar o prontuário.
-                </DialogDescription>
-              </DialogHeader>
-              <ClinicalFormRenderer
-                template={getClinicalTemplate(formDraft.key)!}
-                values={formDraft.values}
-                onChange={updateFormDraftField}
-              />
-              <DialogFooter className="gap-2 sm:gap-2">
-                <Button variant="outline" onClick={() => setFormDraft(null)}>
-                  Cancelar
-                </Button>
-                <Button onClick={() => setConfirmFormSaveOpen(true)}>Salvar formulário</Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!activeAction} onOpenChange={(open) => !open && setActiveAction(null)}>
-        <DialogContent className="max-h-[88vh] max-w-5xl overflow-y-auto rounded-2xl">
-          {activeAction && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{actionCopy[activeAction].title}</DialogTitle>
-                <DialogDescription>{actionCopy[activeAction].description}</DialogDescription>
-              </DialogHeader>
-
-              {activeAction === "appointment" && (
-                <div className="space-y-4">
-                  <AppointmentCalendar
-                    professional={viewerProfessional}
-                    appointments={calendarAppointments}
-                    cursorMonth={appointmentCursor}
-                    onCursorMonthChange={setAppointmentCursor}
-                    selectedDate={appointmentDate}
-                    selectedTime={appointmentTime}
-                    onSelect={(date, time) => {
-                      setAppointmentCursor(getMonthKey(date));
-                      setAppointmentDate(date);
-                      setAppointmentTime(time);
+        <Dialog open={!!activeFormKey} onOpenChange={(open) => !open && setActiveFormKey(null)}>
+          <DialogContent className="large-route-type max-h-[85vh] max-w-4xl overflow-y-auto">
+            {activeTemplate && activeFormKey && activeMeta && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="font-display text-xl">{activeTemplate.name}</DialogTitle>
+                  <DialogDescription>
+                    {patient.name} · {patient.id} · atualizado em {activeMeta.updated} ·{" "}
+                    {activeTemplate.source}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" onClick={() => openFormEdit(activeFormKey)}>
+                    <Edit3 className="h-4 w-4" />
+                    Editar formulário
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setFormPendingDelete(activeFormKey);
+                      setConfirmFormDeleteOpen(true);
                     }}
-                  />
-                  <label className="block text-sm font-medium">
-                    Tipo
-                    <select
-                      value={appointmentMode}
-                      onChange={(event) => setAppointmentMode(event.target.value)}
-                      className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option>Teleconsulta</option>
-                      <option>Presencial</option>
-                      <option>Retorno de enfermagem</option>
-                    </select>
-                  </label>
+                    className="text-danger hover:text-danger"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir formulário
+                  </Button>
                 </div>
-              )}
-
-              {activeAction === "review" && (
-                <Checklist
-                  title="Itens da revisão"
-                  options={reviewItems}
-                  selected={selectedReviewItems}
-                  onToggle={(item) => toggleItem(item, selectedReviewItems, setSelectedReviewItems)}
+                <ClinicalFormRenderer
+                  template={activeTemplate}
+                  values={syncedClinicalForms[activeFormKey]}
+                  readOnly
                 />
-              )}
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
 
-              {activeAction === "worsening" && (
-                <Checklist
-                  title="Sinais de piora"
-                  options={worseningItems}
-                  selected={selectedWorseningItems}
-                  onToggle={(item) =>
-                    toggleItem(item, selectedWorseningItems, setSelectedWorseningItems)
+        <Dialog open={profileEditOpen} onOpenChange={setProfileEditOpen}>
+          <DialogContent className="large-route-type max-h-[85vh] max-w-2xl overflow-y-auto rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Editar perfil e prontuário</DialogTitle>
+              <DialogDescription>
+                Atualize dados do paciente e confirme antes de aplicar ao prontuário.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-3 md:grid-cols-2">
+              <ProfileField
+                label="Nome"
+                value={profileWorkingDraft.name}
+                onChange={(value) => updateProfileDraft("name", value)}
+              />
+              <ProfileField
+                label="Idade"
+                value={profileWorkingDraft.age}
+                onChange={(value) => updateProfileDraft("age", value)}
+              />
+              <label className="block text-sm font-medium">
+                Risco
+                <select
+                  value={profileWorkingDraft.risk}
+                  onChange={(event) =>
+                    updateProfileDraft("risk", event.target.value as Patient["risk"])
                   }
-                />
-              )}
-
-              <label className="text-sm font-semibold">
-                Observação da ação
-                <textarea
-                  value={actionNote}
-                  onChange={(event) => setActionNote(event.target.value)}
-                  placeholder={actionCopy[activeAction].placeholder}
-                  className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-border bg-background p-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-ring"
-                />
+                  className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="low">Baixo</option>
+                  <option value="medium">Moderado</option>
+                  <option value="high">Alto</option>
+                </select>
               </label>
-              <DialogFooter className="gap-2 sm:gap-2">
-                <Button variant="outline" onClick={() => setActiveAction(null)}>
-                  Cancelar
-                </Button>
-                <Button onClick={completeSuggestedAction}>Registrar ação</Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+              <ProfileField
+                label="Responsável"
+                value={profileWorkingDraft.responsible}
+                onChange={(value) => updateProfileDraft("responsible", value)}
+              />
+              <ProfileField
+                label="FC"
+                value={profileWorkingDraft.hr}
+                onChange={(value) => updateProfileDraft("hr", value)}
+              />
+              <ProfileField
+                label="Peso"
+                value={profileWorkingDraft.weight}
+                onChange={(value) => updateProfileDraft("weight", value)}
+              />
+              <ProfileField
+                label="Autocuidado"
+                value={profileWorkingDraft.selfCare}
+                onChange={(value) => updateProfileDraft("selfCare", value)}
+              />
+              <ProfileField
+                label="Adesão"
+                value={profileWorkingDraft.adherence}
+                onChange={(value) => updateProfileDraft("adherence", value)}
+              />
+              <ProfileField
+                label="PA"
+                value={profileWorkingDraft.bp}
+                onChange={(value) => updateProfileDraft("bp", value)}
+              />
+              <ProfileField
+                label="SpO2"
+                value={profileWorkingDraft.spo2}
+                onChange={(value) => updateProfileDraft("spo2", value)}
+              />
+              <ProfileField
+                label="FEVE"
+                value={profileWorkingDraft.fe}
+                onChange={(value) => updateProfileDraft("fe", value)}
+              />
+              <ProfileField
+                label="VO2"
+                value={profileWorkingDraft.vo2}
+                onChange={(value) => updateProfileDraft("vo2", value)}
+              />
+            </div>
+            <DialogFooter className="gap-2 sm:gap-2">
+              <Button variant="outline" onClick={() => setProfileEditOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => setConfirmProfileSaveOpen(true)}>Salvar alterações</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      <AlertDialog open={confirmProfileSaveOpen} onOpenChange={setConfirmProfileSaveOpen}>
-        <AlertDialogContent className="rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar edição do prontuário</AlertDialogTitle>
-            <AlertDialogDescription>
-              Deseja aplicar as alterações no perfil e resumo clínico deste paciente?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Voltar</AlertDialogCancel>
-            <AlertDialogAction onClick={saveProfileDraft}>Confirmar edição</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <Dialog open={!!formDraft} onOpenChange={(open) => !open && setFormDraft(null)}>
+          <DialogContent className="large-route-type max-h-[85vh] max-w-4xl overflow-y-auto rounded-2xl">
+            {formDraft && getClinicalTemplate(formDraft.key) && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>Editar formulário clínico</DialogTitle>
+                  <DialogDescription>
+                    Ajuste as perguntas e confirme antes de atualizar o prontuário.
+                  </DialogDescription>
+                </DialogHeader>
+                <ClinicalFormRenderer
+                  template={getClinicalTemplate(formDraft.key)!}
+                  values={formDraft.values}
+                  onChange={updateFormDraftField}
+                />
+                <DialogFooter className="gap-2 sm:gap-2">
+                  <Button variant="outline" onClick={() => setFormDraft(null)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={() => setConfirmFormSaveOpen(true)}>Salvar formulário</Button>
+                </DialogFooter>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
 
-      <AlertDialog open={confirmRecordDeleteOpen} onOpenChange={setConfirmRecordDeleteOpen}>
-        <AlertDialogContent className="rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir prontuário</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação removerá o prontuário da visualização ativa desta sessão. Deseja continuar?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={deleteRecord}>Excluir prontuário</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <Dialog open={!!activeAction} onOpenChange={(open) => !open && setActiveAction(null)}>
+          <DialogContent
+            className={`large-route-type max-h-[88vh] overflow-y-auto rounded-2xl ${
+              activeAction === "appointment" ? "max-w-7xl" : "max-w-5xl"
+            }`}
+          >
+            {activeAction && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>{actionCopy[activeAction].title}</DialogTitle>
+                  <DialogDescription>{actionCopy[activeAction].description}</DialogDescription>
+                </DialogHeader>
 
-      <AlertDialog open={confirmFormSaveOpen} onOpenChange={setConfirmFormSaveOpen}>
-        <AlertDialogContent className="rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar edição do formulário</AlertDialogTitle>
-            <AlertDialogDescription>
-              Deseja salvar as alterações neste formulário clínico?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Voltar</AlertDialogCancel>
-            <AlertDialogAction onClick={saveFormDraft}>Salvar formulário</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+                {activeAction === "appointment" && (
+                  <div className="space-y-4">
+                    <AppointmentCalendar
+                      professional={viewerProfessional}
+                      appointments={calendarAppointments}
+                      cursorMonth={appointmentCursor}
+                      onCursorMonthChange={setAppointmentCursor}
+                      selectedDate={appointmentDate}
+                      selectedTime={appointmentTime}
+                      onSelect={(date, time) => {
+                        setAppointmentCursor(getMonthKey(date));
+                        setAppointmentDate(date);
+                        setAppointmentTime(time);
+                      }}
+                    />
+                    <label className="block text-sm font-medium">
+                      Tipo
+                      <select
+                        value={appointmentMode}
+                        onChange={(event) => setAppointmentMode(event.target.value)}
+                        className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        <option>Teleconsulta</option>
+                        <option>Presencial</option>
+                        <option>Retorno de enfermagem</option>
+                      </select>
+                    </label>
+                  </div>
+                )}
 
-      <AlertDialog open={confirmFormDeleteOpen} onOpenChange={setConfirmFormDeleteOpen}>
-        <AlertDialogContent className="rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir formulário</AlertDialogTitle>
-            <AlertDialogDescription>
-              O formulário será removido deste prontuário na sessão atual. Deseja continuar?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={deleteForm}>Excluir formulário</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+                {activeAction === "review" && (
+                  <Checklist
+                    title="Itens da revisão"
+                    options={reviewItems}
+                    selected={selectedReviewItems}
+                    onToggle={(item) =>
+                      toggleItem(item, selectedReviewItems, setSelectedReviewItems)
+                    }
+                  />
+                )}
+
+                {activeAction === "worsening" && (
+                  <Checklist
+                    title="Sinais de piora"
+                    options={worseningItems}
+                    selected={selectedWorseningItems}
+                    onToggle={(item) =>
+                      toggleItem(item, selectedWorseningItems, setSelectedWorseningItems)
+                    }
+                  />
+                )}
+
+                <label className="text-sm font-semibold">
+                  Observação da ação
+                  <textarea
+                    value={actionNote}
+                    onChange={(event) => setActionNote(event.target.value)}
+                    placeholder={actionCopy[activeAction].placeholder}
+                    className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-border bg-background p-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </label>
+                <DialogFooter className="gap-2 sm:gap-2">
+                  <Button variant="outline" onClick={() => setActiveAction(null)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={completeSuggestedAction}>Registrar ação</Button>
+                </DialogFooter>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        <AlertDialog open={confirmProfileSaveOpen} onOpenChange={setConfirmProfileSaveOpen}>
+          <AlertDialogContent className="large-route-type rounded-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar edição do prontuário</AlertDialogTitle>
+              <AlertDialogDescription>
+                Deseja aplicar as alterações no perfil e resumo clínico deste paciente?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Voltar</AlertDialogCancel>
+              <AlertDialogAction onClick={saveProfileDraft}>Confirmar edição</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={confirmRecordDeleteOpen} onOpenChange={setConfirmRecordDeleteOpen}>
+          <AlertDialogContent className="large-route-type rounded-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir prontuário</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação removerá o prontuário da visualização ativa desta sessão. Deseja
+                continuar?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteRecord}>Excluir prontuário</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={confirmFormSaveOpen} onOpenChange={setConfirmFormSaveOpen}>
+          <AlertDialogContent className="large-route-type rounded-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar edição do formulário</AlertDialogTitle>
+              <AlertDialogDescription>
+                Deseja salvar as alterações neste formulário clínico?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Voltar</AlertDialogCancel>
+              <AlertDialogAction onClick={saveFormDraft}>Salvar formulário</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={confirmFormDeleteOpen} onOpenChange={setConfirmFormDeleteOpen}>
+          <AlertDialogContent className="large-route-type rounded-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir formulário</AlertDialogTitle>
+              <AlertDialogDescription>
+                O formulário será removido deste prontuário na sessão atual. Deseja continuar?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteForm}>Excluir formulário</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </AppShell>
   );
 }

@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Heart, LockKeyhole, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
+import { ArrowRight, Heart, LockKeyhole, ShieldCheck, Stethoscope } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Card.io BI · Monitoramento de Insuficiência Cardíaca" },
+      { title: "Card.io BI - Monitoramento de Insuficiencia Cardiaca" },
       {
         name: "description",
         content:
-          "Portal de acesso para pacientes e equipe médica no monitoramento contínuo de insuficiência cardíaca.",
+          "Portal de acesso da equipe medica para monitoramento continuo de insuficiencia cardiaca.",
       },
     ],
   }),
@@ -30,12 +30,12 @@ function LoginPortal() {
             <div className="leading-tight">
               <div className="font-display text-base font-semibold tracking-tight">Card.io</div>
               <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Insuf. Cardíaca · BI
+                Insuf. Cardiaca - BI
               </div>
             </div>
           </div>
           <span className="hidden text-xs font-medium text-muted-foreground sm:inline">
-            Portal de monitoramento remoto
+            Portal da equipe assistencial
           </span>
         </div>
       </header>
@@ -44,20 +44,20 @@ function LoginPortal() {
         <div className="mx-auto flex min-h-40 max-w-7xl items-center px-6 py-8">
           <div>
             <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary">
-              Novo portal
+              Áreaclinica
             </span>
             <div className="mt-4 flex items-center gap-4">
               <ShieldCheck className="h-12 w-12" />
               <div>
-                <p className="text-sm font-semibold">Monitoramento de insuficiência cardíaca</p>
+                <p className="text-sm font-semibold">Monitoramento de insuficiencia cardiaca</p>
                 <h1 className="font-display text-4xl font-semibold leading-none tracking-tight">
                   Card.io
                 </h1>
               </div>
             </div>
             <p className="mt-4 max-w-xl text-sm font-medium text-primary-foreground/90">
-              Acesso simples para pacientes e equipe assistencial acompanharem cuidado, alertas e
-              evolução clínica.
+              Acesso da equipe para acompanhar pacientes, alertas, formularios clinicos e
+              prontuarios detalhados.
             </p>
           </div>
         </div>
@@ -65,31 +65,7 @@ function LoginPortal() {
 
       <main className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[420px_1fr] lg:items-center lg:py-24">
         <div className="space-y-4">
-          <AuthAccessCard
-            profile="patient"
-            title="Entrar como paciente"
-            description="Acompanhe seus remédios, peso, sintomas e recados da equipe."
-            route="/paciente"
-            identifierLabel="CPF ou telefone"
-            identifierPlaceholder="Digite seu CPF ou telefone"
-            icon={<UserRound className="h-5 w-5" />}
-          />
-
-          <div className="flex items-center gap-3 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            ou
-            <span className="h-px flex-1 bg-border" />
-          </div>
-
-          <AuthAccessCard
-            profile="team"
-            title="Entrar como equipe médica"
-            description="Acesse pacientes filtrados, alertas críticos e prontuários."
-            route="/equipe"
-            identifierLabel="E-mail institucional"
-            identifierPlaceholder="nome@hospital.edu"
-            icon={<Stethoscope className="h-5 w-5" />}
-          />
+          <AuthAccessCard />
         </div>
 
         <div className="rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)] lg:p-10">
@@ -127,11 +103,11 @@ function LoginPortal() {
             </div>
           </div>
           <h2 className="mt-8 text-center font-display text-3xl font-semibold tracking-tight text-primary">
-            Um portal para acompanhar o cuidado
+            Gestao clinica em um unico painel
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-relaxed text-muted-foreground">
-            O paciente entra no seu painel diário; a equipe médica entra no dashboard clínico e nos
-            prontuários.
+            A equipe medica entra direto no dashboard clinico, no cadastro de pacientes e nos
+            prontuarios.
           </p>
         </div>
       </main>
@@ -139,47 +115,29 @@ function LoginPortal() {
   );
 }
 
-function AuthAccessCard({
-  profile,
-  title,
-  description,
-  route,
-  identifierLabel,
-  identifierPlaceholder,
-  icon,
-}: {
-  profile: "patient" | "team";
-  title: string;
-  description: string;
-  route: "/paciente" | "/equipe";
-  identifierLabel: string;
-  identifierPlaceholder: string;
-  icon: React.ReactNode;
-}) {
-  const isPatient = profile === "patient";
-
+function AuthAccessCard() {
   return (
     <section className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
       <div className="flex items-start gap-3">
-        <div
-          className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${
-            isPatient ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"
-          }`}
-        >
-          {icon}
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground">
+          <Stethoscope className="h-5 w-5" />
         </div>
         <div>
-          <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
+          <h2 className="font-display text-xl font-semibold tracking-tight">
+            Entrar como equipe medica
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            Acesse pacientes filtrados, alertas criticos e prontuarios.
+          </p>
         </div>
       </div>
 
       <form className="mt-5 space-y-3" onSubmit={(event) => event.preventDefault()}>
         <label className="block text-sm font-medium">
-          {identifierLabel}
+          E-mail institucional
           <input
             className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder={identifierPlaceholder}
+            placeholder="nome@hospital.edu"
           />
         </label>
         <label className="block text-sm font-medium">
@@ -194,10 +152,10 @@ function AuthAccessCard({
           </div>
         </label>
         <Link
-          to={route}
+          to="/equipe"
           className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
         >
-          {title}
+          Entrar no dashboard
           <ArrowRight className="h-4 w-4" />
         </Link>
       </form>

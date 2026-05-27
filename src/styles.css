@@ -113,8 +113,66 @@
     font-family: var(--font-sans);
     font-feature-settings: "cv11", "ss01";
   }
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+}
+
+.large-route-type [class~="text-[9px]"] {
+  font-size: 0.6875rem !important;
+  line-height: 1rem !important;
+}
+
+.large-route-type [class~="text-[10px]"] {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+.large-route-type [class~="text-[11px]"] {
+  font-size: 0.8125rem !important;
+  line-height: 1.125rem !important;
+}
+
+.large-route-type [class~="text-xs"] {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.large-route-type [class~="text-sm"] {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.large-route-type [class~="text-base"] {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+}
+
+.large-route-type [class~="text-lg"] {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+}
+
+.large-route-type [class~="text-xl"] {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+}
+
+.large-route-type [class~="text-2xl"] {
+  font-size: 1.875rem !important;
+  line-height: 2.25rem !important;
+}
+
+.large-route-type [class~="text-3xl"] {
+  font-size: 2.25rem !important;
+  line-height: 2.5rem !important;
+}
+
+.large-route-type [class~="text-4xl"] {
+  font-size: 3rem !important;
+  line-height: 1 !important;
 }

@@ -63,7 +63,7 @@ const tooltipStyle = {
   background: "var(--card)",
   border: "1px solid var(--border)",
   borderRadius: 12,
-  fontSize: 12,
+  fontSize: 14,
   boxShadow: "var(--shadow-card)",
 };
 
@@ -195,457 +195,467 @@ function TeamDashboard() {
 
   return (
     <AppShell profile="team">
-      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Cardiologia · Insuficiência Cardíaca
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">
-            Dashboard Clínico
-          </h1>
-          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-            Visão da População de estudo com foco em prioridade clínica, evolução longitudinal e
-            alertas acionáveis.
-          </p>
+      <div className="large-route-type">
+        <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              Cardiologia · Insuficiência Cardíaca
+            </p>
+            <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">
+              Dashboard Clínico
+            </h1>
+            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+              Visão da População de estudo com foco em prioridade clínica, evolução longitudinal e
+              alertas acionáveis.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row xl:items-end">
+            <Link
+              to="/cadastro-paciente"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow transition hover:opacity-90"
+            >
+              <UserPlus className="h-4 w-4" />
+              Cadastrar paciente
+            </Link>
+            <FilterBar
+              filters={filters}
+              onChange={updateFilter}
+              onClear={() =>
+                setFilters({
+                  period: "30",
+                  risk: "all",
+                  response: "all",
+                  professional: "all",
+                  search: "",
+                })
+              }
+            />
+          </div>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row xl:items-end">
-          <Link
-            to="/cadastro-paciente"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow transition hover:opacity-90"
-          >
-            <UserPlus className="h-4 w-4" />
-            Cadastrar paciente
-          </Link>
-          <FilterBar
-            filters={filters}
-            onChange={updateFilter}
-            onClear={() =>
-              setFilters({
-                period: "30",
-                risk: "all",
-                response: "all",
-                professional: "all",
-                search: "",
-              })
-            }
+
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+          <Kpi
+            label="Pacientes filtrados"
+            value={filteredPatients.length}
+            delta={`${patients.length} na base`}
+            trend="flat"
+            icon={<Users className="h-4 w-4" />}
+            active={activeIndicator === "filtered"}
+            onClick={() => setActiveIndicator("filtered")}
+          />
+          <Kpi
+            label="Alertas críticos"
+            value={criticalAlerts.length}
+            delta="prioridade de hoje"
+            trend="down"
+            tone="danger"
+            icon={<AlertTriangle className="h-4 w-4" />}
+            active={activeIndicator === "critical"}
+            onClick={() => setActiveIndicator("critical")}
+          />
+          <Kpi
+            label="Sem atualização"
+            value={stalePatients.length}
+            delta="busca ativa"
+            trend="down"
+            tone="warning"
+            icon={<ClipboardList className="h-4 w-4" />}
+            active={activeIndicator === "stale"}
+            onClick={() => setActiveIndicator("stale")}
+          />
+          <Kpi
+            label="Resposta atrasada"
+            value={delayedPatients.length}
+            delta="último contato"
+            trend="down"
+            tone="warning"
+            icon={<Clock className="h-4 w-4" />}
+            active={activeIndicator === "delayed"}
+            onClick={() => setActiveIndicator("delayed")}
+          />
+          <Kpi
+            label="Adesão média"
+            value={`${avgAdherence}%`}
+            delta={`${lowAdherencePatients.length} abaixo do alvo`}
+            trend="up"
+            tone="success"
+            icon={<HeartPulse className="h-4 w-4" />}
+            active={activeIndicator === "adherence"}
+            onClick={() => setActiveIndicator("adherence")}
+          />
+          <Kpi
+            label="Autocuidado"
+            value={`${avgSelfCare}%`}
+            delta={`${lowSelfCarePatients.length} abaixo do alvo`}
+            trend="up"
+            tone="success"
+            icon={<Activity className="h-4 w-4" />}
+            active={activeIndicator === "selfCare"}
+            onClick={() => setActiveIndicator("selfCare")}
           />
         </div>
-      </div>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-        <Kpi
-          label="Pacientes filtrados"
-          value={filteredPatients.length}
-          delta={`${patients.length} na base`}
-          trend="flat"
-          icon={<Users className="h-4 w-4" />}
-          active={activeIndicator === "filtered"}
-          onClick={() => setActiveIndicator("filtered")}
-        />
-        <Kpi
-          label="Alertas críticos"
-          value={criticalAlerts.length}
-          delta="prioridade de hoje"
-          trend="down"
-          tone="danger"
-          icon={<AlertTriangle className="h-4 w-4" />}
-          active={activeIndicator === "critical"}
-          onClick={() => setActiveIndicator("critical")}
-        />
-        <Kpi
-          label="Sem atualização"
-          value={stalePatients.length}
-          delta="busca ativa"
-          trend="down"
-          tone="warning"
-          icon={<ClipboardList className="h-4 w-4" />}
-          active={activeIndicator === "stale"}
-          onClick={() => setActiveIndicator("stale")}
-        />
-        <Kpi
-          label="Resposta atrasada"
-          value={delayedPatients.length}
-          delta="último contato"
-          trend="down"
-          tone="warning"
-          icon={<Clock className="h-4 w-4" />}
-          active={activeIndicator === "delayed"}
-          onClick={() => setActiveIndicator("delayed")}
-        />
-        <Kpi
-          label="Adesão média"
-          value={`${avgAdherence}%`}
-          delta={`${lowAdherencePatients.length} abaixo do alvo`}
-          trend="up"
-          tone="success"
-          icon={<HeartPulse className="h-4 w-4" />}
-          active={activeIndicator === "adherence"}
-          onClick={() => setActiveIndicator("adherence")}
-        />
-        <Kpi
-          label="Autocuidado"
-          value={`${avgSelfCare}%`}
-          delta={`${lowSelfCarePatients.length} abaixo do alvo`}
-          trend="up"
-          tone="success"
-          icon={<Activity className="h-4 w-4" />}
-          active={activeIndicator === "selfCare"}
-          onClick={() => setActiveIndicator("selfCare")}
-        />
-      </div>
+        <div className="grid gap-5 lg:grid-cols-12">
+          <IndicatorPatientDetails details={indicatorDetails[activeIndicator]} />
 
-      <div className="grid gap-5 lg:grid-cols-12">
-        <IndicatorPatientDetails details={indicatorDetails[activeIndicator]} />
+          <StalePatientsSection patients={stalePatients} />
 
-        <StalePatientsSection patients={stalePatients} />
-
-        <BiCard
-          className="lg:col-span-5"
-          title="Alertas críticos"
-          subtitle="Pacientes com maior risco de piora nas últimas 24h"
-          accent="danger"
-        >
-          <div className="space-y-3">
-            {criticalAlerts.length === 0 && (
-              <EmptyState text="Nenhum alerta crítico para os filtros atuais." />
-            )}
-            {criticalAlerts.map((p) => (
-              <div key={p.id} className="rounded-2xl border border-danger/25 bg-danger/5 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold">{p.name}</div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {p.id} · {p.lastResponse} · {getProfessional(p.id)}
+          <BiCard
+            className="lg:col-span-5"
+            title="Alertas críticos"
+            subtitle="Pacientes com maior risco de piora nas últimas 24h"
+            accent="danger"
+          >
+            <div className="space-y-3">
+              {criticalAlerts.length === 0 && (
+                <EmptyState text="Nenhum alerta crítico para os filtros atuais." />
+              )}
+              {criticalAlerts.map((p) => (
+                <div key={p.id} className="rounded-2xl border border-danger/25 bg-danger/5 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-semibold">{p.name}</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {p.id} · {p.lastResponse} · {getProfessional(p.id)}
+                      </div>
                     </div>
+                    <RiskBadge risk={p.risk} />
                   </div>
-                  <RiskBadge risk={p.risk} />
-                </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
-                  <Mini label="Autocuidado" value={`${p.selfCare}%`} bad={p.selfCare < 55} />
-                  <Mini label="FE" value={`${p.fe}%`} bad={p.fe < 35} />
-                  <Mini label="SpO₂" value={`${p.spo2}%`} bad={p.spo2 < 93} />
-                </div>
-                <Link
-                  to="/prontuario/$patientId"
-                  params={{ patientId: p.id }}
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-danger px-3 py-2 text-xs font-semibold text-danger-foreground transition hover:opacity-90"
-                >
-                  <FolderOpen className="h-4 w-4" />
-                  Abrir prontuário
-                </Link>
-              </div>
-            ))}
-          </div>
-        </BiCard>
-
-        <BiCard
-          className="lg:col-span-7"
-          title="Pacientes que precisam de atenção"
-          subtitle="Ordenado por risco, tendência de piora e atraso de resposta"
-        >
-          <div className="space-y-2">
-            {attentionPatients.length === 0 && (
-              <EmptyState text="Nenhum paciente prioritário nos filtros atuais." />
-            )}
-            {attentionPatients.slice(0, 5).map((p) => (
-              <AttentionRow key={p.id} patient={p} />
-            ))}
-          </div>
-        </BiCard>
-
-        <BiCard
-          className="lg:col-span-8"
-          title="Pacientes monitorados"
-          subtitle="Lista filtrada por busca, risco, período e profissional"
-          action={
-            <SearchField
-              value={filters.search}
-              onChange={(value) => updateFilter("search", value)}
-              placeholder="Buscar paciente"
-            />
-          }
-        >
-          <div className="-mx-2 overflow-x-auto">
-            <table className="w-full min-w-[760px] text-sm">
-              <thead>
-                <tr className="text-left text-[10px] uppercase tracking-wider text-muted-foreground">
-                  <th className="px-2 py-2 font-medium">Paciente</th>
-                  <th className="px-2 py-2 font-medium">Risco</th>
-                  <th className="px-2 py-2 font-medium">Autocuidado</th>
-                  <th className="px-2 py-2 font-medium">Adesão</th>
-                  <th className="px-2 py-2 font-medium">FC</th>
-                  <th className="px-2 py-2 font-medium">SpO₂</th>
-                  <th className="px-2 py-2 font-medium">Resp.</th>
-                  <th className="px-2 py-2 font-medium">Profissional</th>
-                  <th className="px-2 py-2 font-medium">Tend.</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPatients.map((p) => (
-                  <tr
-                    key={p.id}
-                    className="border-t border-border transition hover:bg-secondary/40"
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+                    <Mini label="Autocuidado" value={`${p.selfCare}%`} bad={p.selfCare < 55} />
+                    <Mini label="FE" value={`${p.fe}%`} bad={p.fe < 35} />
+                    <Mini label="SpO₂" value={`${p.spo2}%`} bad={p.spo2 < 93} />
+                  </div>
+                  <Link
+                    to="/prontuario/$patientId"
+                    params={{ patientId: p.id }}
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-danger px-3 py-2 text-xs font-semibold text-danger-foreground transition hover:opacity-90"
                   >
-                    <td className="px-2 py-2.5">
-                      <button onClick={() => setActivePatient(p.id)} className="text-left">
-                        <div className="font-medium leading-tight text-foreground">{p.name}</div>
-                        <div className="text-[10px] text-muted-foreground">
-                          {p.id} · {p.age} anos
-                        </div>
-                      </button>
-                    </td>
-                    <td className="px-2 py-2.5">
-                      <RiskBadge risk={p.risk} />
-                    </td>
-                    <td className="px-2 py-2.5">
-                      <ProgressCell value={p.selfCare} />
-                    </td>
-                    <td className="px-2 py-2.5">
-                      <ProgressCell value={p.adherence} />
-                    </td>
-                    <td className="px-2 py-2.5 text-xs">{p.hr} bpm</td>
-                    <td className="px-2 py-2.5 text-xs">
-                      <span className={p.spo2 < 93 ? "font-semibold text-danger" : ""}>
-                        {p.spo2}%
-                      </span>
-                    </td>
-                    <td className="px-2 py-2.5 text-[11px] text-muted-foreground">
-                      {p.lastResponse}
-                    </td>
-                    <td className="px-2 py-2.5 text-[11px] text-muted-foreground">
-                      {getProfessional(p.id)}
-                    </td>
-                    <td className="px-2 py-2.5">
-                      {p.trend === "up" ? (
-                        <ArrowUpRight className="h-4 w-4 text-success" />
-                      ) : p.trend === "down" ? (
-                        <ArrowDownRight className="h-4 w-4 text-danger" />
-                      ) : (
-                        <Minus className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredPatients.length === 0 && (
-              <EmptyState text="Nenhum paciente encontrado com os filtros atuais." />
-            )}
-          </div>
-        </BiCard>
-
-        <BiCard
-          className="lg:col-span-4"
-          title="Distribuição por risco clínico"
-          subtitle="Classificação da População de estudo filtrada"
-        >
-          <div className="space-y-4">
-            {riskCounts.map((item) => {
-              const pct = Math.round((item.value / totalFiltered) * 100);
-              const barColor =
-                item.risk === "high"
-                  ? "bg-danger"
-                  : item.risk === "medium"
-                    ? "bg-warning"
-                    : "bg-success";
-              return (
-                <div key={item.risk}>
-                  <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="font-semibold">{item.label}</span>
-                    <span className="text-muted-foreground">
-                      {item.value} pacientes · {pct}%
-                    </span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={`h-full rounded-full ${barColor}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
-                    {riskDescriptions[item.risk]}
-                  </p>
+                    <FolderOpen className="h-4 w-4" />
+                    Abrir prontuário
+                  </Link>
                 </div>
-              );
-            })}
-          </div>
-        </BiCard>
+              ))}
+            </div>
+          </BiCard>
 
-        <BiCard
-          className="lg:col-span-7"
-          title="Evolução de frequência cardíaca e peso"
-          subtitle={`${patient.name} · série longitudinal do paciente selecionado`}
-          action={
-            <SearchField
-              value={indicatorSearch}
-              onChange={updateIndicatorSearch}
-              placeholder="Buscar por nome, ex.: naria"
-            />
-          }
-        >
-          <p className="mb-3 text-xs text-muted-foreground">
-            Busca tolerante a pequenos erros de grafia. Mostra tendência de FC e peso para detectar
-            ganho ponderal e taquicardia persistente.
-          </p>
-          <ResponsiveContainer width="100%" height={280}>
-            <ComposedChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                yAxisId="left"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="hr"
-                name="FC bpm"
-                stroke="var(--danger)"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="weight"
-                name="Peso kg"
-                stroke="var(--primary)"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </BiCard>
+          <BiCard
+            className="lg:col-span-7"
+            title="Pacientes que precisam de atenção"
+            subtitle="Ordenado por risco, tendência de piora e atraso de resposta"
+          >
+            <div className="space-y-2">
+              {attentionPatients.length === 0 && (
+                <EmptyState text="Nenhum paciente prioritário nos filtros atuais." />
+              )}
+              {attentionPatients.slice(0, 5).map((p) => (
+                <AttentionRow key={p.id} patient={p} />
+              ))}
+            </div>
+          </BiCard>
 
-        <BiCard
-          className="lg:col-span-5"
-          title="Indicadores de piora recente"
-          subtitle="Quantidade de pacientes por sinal clínico prioritário"
-        >
-          <p className="mb-3 text-xs text-muted-foreground">
-            Resume quais alterações estão mais presentes na população filtrada e orienta o tipo de
-            intervenção.
-          </p>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart
-              data={worseningData}
-              layout="vertical"
-              margin={{ top: 10, right: 10, left: 32, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-              <XAxis
-                type="number"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
+          <BiCard
+            className="lg:col-span-8"
+            title="Pacientes monitorados"
+            subtitle="Lista filtrada por busca, risco, período e profissional"
+            action={
+              <SearchField
+                value={filters.search}
+                onChange={(value) => updateFilter("search", value)}
+                placeholder="Buscar paciente"
               />
-              <YAxis
-                type="category"
-                dataKey="indicator"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-                width={88}
-              />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="patients" name="Pacientes" fill="var(--danger)" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </BiCard>
+            }
+          >
+            <div className="-mx-2 overflow-x-auto">
+              <table className="w-full min-w-[760px] text-sm">
+                <thead>
+                  <tr className="text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <th className="px-2 py-2 font-medium">Paciente</th>
+                    <th className="px-2 py-2 font-medium">Risco</th>
+                    <th className="px-2 py-2 font-medium">Autocuidado</th>
+                    <th className="px-2 py-2 font-medium">Adesão</th>
+                    <th className="px-2 py-2 font-medium">FC</th>
+                    <th className="px-2 py-2 font-medium">SpO₂</th>
+                    <th className="px-2 py-2 font-medium">Resp.</th>
+                    <th className="px-2 py-2 font-medium">Profissional</th>
+                    <th className="px-2 py-2 font-medium">Tend.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPatients.map((p) => (
+                    <tr
+                      key={p.id}
+                      className="border-t border-border transition hover:bg-secondary/40"
+                    >
+                      <td className="px-2 py-2.5">
+                        <button onClick={() => setActivePatient(p.id)} className="text-left">
+                          <div className="font-medium leading-tight text-foreground">{p.name}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {p.id} · {p.age} anos
+                          </div>
+                        </button>
+                      </td>
+                      <td className="px-2 py-2.5">
+                        <RiskBadge risk={p.risk} />
+                      </td>
+                      <td className="px-2 py-2.5">
+                        <ProgressCell value={p.selfCare} />
+                      </td>
+                      <td className="px-2 py-2.5">
+                        <ProgressCell value={p.adherence} />
+                      </td>
+                      <td className="px-2 py-2.5 text-xs">{p.hr} bpm</td>
+                      <td className="px-2 py-2.5 text-xs">
+                        <span className={p.spo2 < 93 ? "font-semibold text-danger" : ""}>
+                          {p.spo2}%
+                        </span>
+                      </td>
+                      <td className="px-2 py-2.5 text-[11px] text-muted-foreground">
+                        {p.lastResponse}
+                      </td>
+                      <td className="px-2 py-2.5 text-[11px] text-muted-foreground">
+                        {getProfessional(p.id)}
+                      </td>
+                      <td className="px-2 py-2.5">
+                        {p.trend === "up" ? (
+                          <ArrowUpRight className="h-4 w-4 text-success" />
+                        ) : p.trend === "down" ? (
+                          <ArrowDownRight className="h-4 w-4 text-danger" />
+                        ) : (
+                          <Minus className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {filteredPatients.length === 0 && (
+                <EmptyState text="Nenhum paciente encontrado com os filtros atuais." />
+              )}
+            </div>
+          </BiCard>
 
-        <BiCard
-          className="lg:col-span-6"
-          title="Fila de ação clínica"
-          subtitle="Prioridade prática para contato e revisão"
-        >
-          <p className="mb-3 text-xs text-muted-foreground">
-            Organiza a carga assistencial em grupos acionáveis, evitando mistura de métricas
-            clínicas e operacionais.
-          </p>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={actionQueueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis
-                dataKey="queue"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Bar
-                dataKey="patients"
-                name="Pacientes"
-                fill="var(--primary)"
-                radius={[6, 6, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </BiCard>
+          <BiCard
+            className="lg:col-span-4"
+            title="Distribuição por risco clínico"
+            subtitle="Classificação da População de estudo filtrada"
+          >
+            <div className="space-y-4">
+              {riskCounts.map((item) => {
+                const pct = Math.round((item.value / totalFiltered) * 100);
+                const barColor =
+                  item.risk === "high"
+                    ? "bg-danger"
+                    : item.risk === "medium"
+                      ? "bg-warning"
+                      : "bg-success";
+                return (
+                  <div key={item.risk}>
+                    <div className="mb-1 flex items-center justify-between text-xs">
+                      <span className="font-semibold">{item.label}</span>
+                      <span className="text-muted-foreground">
+                        {item.value} pacientes · {pct}%
+                      </span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={`h-full rounded-full ${barColor}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                      {riskDescriptions[item.risk]}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </BiCard>
 
-        <BiCard
-          className="lg:col-span-6"
-          title="Atualização remota por risco"
-          subtitle="Quem respondeu recentemente e quem exige busca ativa"
-        >
-          <p className="mb-3 text-xs text-muted-foreground">
-            Mostra a cobertura de atualização por nível de risco clínico para priorizar pacientes
-            silenciosos.
-          </p>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart
-              data={updateCoverageData}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis
-                dataKey="risk"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
+          <BiCard
+            className="lg:col-span-7"
+            title="Evolução de frequência cardíaca e peso"
+            subtitle={`${patient.name} · série longitudinal do paciente selecionado`}
+            action={
+              <SearchField
+                value={indicatorSearch}
+                onChange={updateIndicatorSearch}
+                placeholder="Buscar por nome, ex.: naria"
               />
-              <YAxis
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar
-                dataKey="recentes"
-                name="Atualização recente"
-                fill="var(--success)"
-                radius={[6, 6, 0, 0]}
-              />
-              <Bar
-                dataKey="atrasados"
-                name="Sem atualização"
-                fill="var(--warning)"
-                radius={[6, 6, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </BiCard>
+            }
+          >
+            <p className="mb-3 text-xs text-muted-foreground">
+              Busca tolerante a pequenos erros de grafia. Mostra tendência de FC e peso para
+              detectar ganho ponderal e taquicardia persistente.
+            </p>
+            <ResponsiveContainer width="100%" height={280}>
+              <ComposedChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  yAxisId="left"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend wrapperStyle={{ fontSize: 13 }} />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="hr"
+                  name="FC bpm"
+                  stroke="var(--danger)"
+                  strokeWidth={2.5}
+                  dot={{ r: 3 }}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="weight"
+                  name="Peso kg"
+                  stroke="var(--primary)"
+                  strokeWidth={2.5}
+                  dot={{ r: 3 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </BiCard>
+
+          <BiCard
+            className="lg:col-span-5"
+            title="Indicadores de piora recente"
+            subtitle="Quantidade de pacientes por sinal clínico prioritário"
+          >
+            <p className="mb-3 text-xs text-muted-foreground">
+              Resume quais alterações estão mais presentes na população filtrada e orienta o tipo de
+              intervenção.
+            </p>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart
+                data={worseningData}
+                layout="vertical"
+                margin={{ top: 10, right: 10, left: 32, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                <XAxis
+                  type="number"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="indicator"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={88}
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar
+                  dataKey="patients"
+                  name="Pacientes"
+                  fill="var(--danger)"
+                  radius={[0, 6, 6, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </BiCard>
+
+          <BiCard
+            className="lg:col-span-6"
+            title="Fila de ação clínica"
+            subtitle="Prioridade prática para contato e revisão"
+          >
+            <p className="mb-3 text-xs text-muted-foreground">
+              Organiza a carga assistencial em grupos acionáveis, evitando mistura de métricas
+              clínicas e operacionais.
+            </p>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart
+                data={actionQueueData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis
+                  dataKey="queue"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar
+                  dataKey="patients"
+                  name="Pacientes"
+                  fill="var(--primary)"
+                  radius={[6, 6, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </BiCard>
+
+          <BiCard
+            className="lg:col-span-6"
+            title="Atualização remota por risco"
+            subtitle="Quem respondeu recentemente e quem exige busca ativa"
+          >
+            <p className="mb-3 text-xs text-muted-foreground">
+              Mostra a cobertura de atualização por nível de risco clínico para priorizar pacientes
+              silenciosos.
+            </p>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart
+                data={updateCoverageData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis
+                  dataKey="risk"
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 13, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend wrapperStyle={{ fontSize: 13 }} />
+                <Bar
+                  dataKey="recentes"
+                  name="Atualização recente"
+                  fill="var(--success)"
+                  radius={[6, 6, 0, 0]}
+                />
+                <Bar
+                  dataKey="atrasados"
+                  name="Sem atualização"
+                  fill="var(--warning)"
+                  radius={[6, 6, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </BiCard>
+        </div>
       </div>
     </AppShell>
   );

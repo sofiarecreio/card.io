@@ -21,36 +21,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function AppShell({
-  children,
-  profile,
-}: {
-  children: ReactNode;
-  profile: "patient" | "team";
-}) {
+export function AppShell({ children }: { children: ReactNode; profile?: "team" }) {
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const isPatient = profile === "patient";
-  const user = isPatient
-    ? {
-        initials: "MO",
-        name: "Maria S. Oliveira",
-        shortName: "Maria O.",
-        role: "Paciente",
-        detail: "Plano de cuidado IC",
-        id: "P-1042",
-        email: "maria.oliveira@email.com",
-        preference: "Lembretes grandes e linguagem simples",
-      }
-    : {
-        initials: "HL",
-        name: "Dr. Henrique Lima",
-        shortName: "Dr. Lima",
-        role: "Médico cardiologista",
-        detail: "Equipe de insuficiência cardíaca",
-        id: "CRM-SP 123456",
-        email: "henrique.lima@hospital.edu",
-        preference: "Alertas críticos primeiro",
-      };
+  const user = {
+    initials: "HL",
+    name: "Dr. Henrique Lima",
+    shortName: "Dr. Lima",
+    role: "Médico cardiologista",
+    detail: "Equipe de insuficiencia cardiaca",
+    id: "CRM-SP 123456",
+    email: "henrique.lima@hospital.edu",
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -66,7 +47,7 @@ export function AppShell({
             <div className="leading-tight">
               <div className="font-display text-base font-semibold tracking-tight">Card.io</div>
               <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Insuf. Cardíaca · BI
+                Insuf. Cardiaca - BI
               </div>
             </div>
           </Link>
@@ -83,7 +64,7 @@ export function AppShell({
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 rounded-full border border-border bg-card px-2 py-1 pr-3 transition hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring">
                   <Avatar className="h-8 w-8 border border-border">
-                    <AvatarFallback className="bg-accent text-xs font-semibold text-accent-foreground">
+                    <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
                       {user.initials}
                     </AvatarFallback>
                   </Avatar>
@@ -112,7 +93,7 @@ export function AppShell({
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="rounded-xl px-3 py-2">
-                  <Link to="/perfil" search={{ tipo: isPatient ? "paciente" : "equipe" }}>
+                  <Link to="/perfil" search={{ tipo: "equipe" }}>
                     <ShieldCheck className="h-4 w-4" />
                     Detalhes do perfil
                   </Link>
@@ -140,18 +121,18 @@ export function AppShell({
         <div className="mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-2 px-4 text-xs text-muted-foreground md:flex-row md:px-8">
           <div className="flex items-center gap-2">
             <LayoutDashboard className="h-3.5 w-3.5" />
-            Card.io BI · Mockup demonstrativo · Dados sintéticos
+            Card.io BI - Mockup demonstrativo - Dados sinteticos
           </div>
-          <div>v1.0 · {new Date().getFullYear()}</div>
+          <div>v1.0 - {new Date().getFullYear()}</div>
         </div>
       </footer>
 
       <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar saída</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar saida</AlertDialogTitle>
             <AlertDialogDescription>
-              Você será levado de volta para a tela de login. Deseja encerrar esta sessão?
+              Voce sera levado de volta para a tela de login. Deseja encerrar esta sessao?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

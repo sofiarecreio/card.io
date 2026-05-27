@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { BiCard } from "@/components/bi/Card";
 import { ClinicalFormRenderer } from "@/components/clinical/ClinicalFormRenderer";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,14 +13,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, CheckCircle2, FileText, Printer, Send, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText, ShieldCheck } from "lucide-react";
 import {
   clinicalFormTemplates,
   cloneClinicalValues,
@@ -35,10 +36,10 @@ import {
 export const Route = createFileRoute("/cadastro-paciente")({
   head: () => ({
     meta: [
-      { title: "Cadastro de paciente · Card.io" },
+      { title: "Cadastro de paciente - Card.io" },
       {
         name: "description",
-        content: "Cadastro clínico de paciente com insuficiência cardíaca.",
+        content: "Cadastro clinico de paciente com insuficiencia cardiaca.",
       },
     ],
   }),
@@ -57,7 +58,6 @@ type RegistrationDraft = {
   responsible: string;
   institution: string;
   summaryText: string;
-  firstMessage: string;
 };
 
 const initialDraft: RegistrationDraft = {
@@ -70,10 +70,9 @@ const initialDraft: RegistrationDraft = {
   address: "",
   evaluationDate: "2026-05-20",
   responsible: "Dr. Henrique Lima",
-  institution: "Hospital Universitário · Cardiologia",
+  institution: "Hospital Universitario - Cardiologia",
   summaryText:
-    "Resumo inicial editável: registre sinais, sintomas, contexto clínico e pontos que precisam ser acompanhados pela equipe.",
-  firstMessage: "",
+    "Resumo inicial editavel: registre sinais, sintomas, contexto clinico e pontos que precisam ser acompanhados pela equipe.",
 };
 
 function PatientRegistrationPage() {
@@ -81,15 +80,14 @@ function PatientRegistrationPage() {
   const [clinicalForms, setClinicalForms] = useState<ClinicalFormsState>(() =>
     createEmptyClinicalFormsState(),
   );
-  const [credentials, setCredentials] = useState<{ login: string; password: string } | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmSummaryOpen, setConfirmSummaryOpen] = useState(false);
-  const [credentialsOpen, setCredentialsOpen] = useState(false);
+  const [registeredOpen, setRegisteredOpen] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [summaryFeedback, setSummaryFeedback] = useState<string | null>(null);
   const [history, setHistory] = useState([
-    "Cadastro iniciado pela equipe médica.",
-    "Prontuário provisório aguardando confirmação.",
+    "Cadastro iniciado pela equipe medica.",
+    "Prontuario provisorio aguardando confirmacao.",
   ]);
 
   const age = useMemo(() => calculateAge(draft.birth), [draft.birth]);
@@ -117,13 +115,6 @@ function PatientRegistrationPage() {
   }, [age, clinicalForms, draft, universalRecord]);
 
   const formCompleteness = countCompletedClinicalForms(syncedClinicalForms);
-
-  function updateField<Key extends keyof RegistrationDraft>(
-    key: Key,
-    value: RegistrationDraft[Key],
-  ) {
-    setDraft((current) => ({ ...current, [key]: value }));
-  }
 
   function updateClinicalField(
     formKey: ClinicalFormKey,
@@ -157,31 +148,23 @@ function PatientRegistrationPage() {
   }
 
   function confirmSummaryEdit() {
-    setSummaryFeedback("Resumo clínico salvo na Identificação Universal.");
-    setHistory((current) => ["Resumo clínico salvo no formulário de identificação.", ...current]);
+    setSummaryFeedback("Resumo clinico salvo na Identificação Universal.");
+    setHistory((current) => ["Resumo clinico salvo no formulario de Identificação.", ...current]);
     setConfirmSummaryOpen(false);
   }
 
   function createPatient() {
-    const login = onlyDigits(draft.cpf);
-    if (login.length < 11) {
-      setFeedback("Informe um CPF completo na Identificação Universal para gerar o acesso.");
+    if (onlyDigits(draft.cpf).length < 11) {
+      setFeedback("Informe um CPF completo na Identificação Universal antes de confirmar.");
       setConfirmOpen(false);
       return;
     }
 
-    const password = generatePassword();
-    setCredentials({ login, password });
-    setCredentialsOpen(true);
+    const message = `Paciente cadastrado no prontuario clinico com Registro Universal ${universalRecord}.`;
+    setFeedback(message);
+    setHistory((current) => [message, ...current]);
+    setRegisteredOpen(true);
     setConfirmOpen(false);
-    setHistory((current) => [
-      `Paciente cadastrado. Login gerado pelo CPF ${login} e Registro Universal ${universalRecord}.`,
-      ...current,
-    ]);
-  }
-
-  function printCredentials() {
-    window.print();
   }
 
   return (
@@ -196,12 +179,12 @@ function PatientRegistrationPage() {
             Voltar ao dashboard
           </Link>
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Cadastro clínico
+            Cadastro clinico
           </p>
           <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">Novo paciente</h1>
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-            Preencha a Identificação Universal e os formulários clínicos completos. O acesso do
-            paciente será gerado com CPF e senha automática.
+            Preencha a Identificação Universal e os formularios clinicos completos. O cadastro fica
+            disponivel para a equipe no fluxo de prontuario, sem acesso individual do paciente.
           </p>
         </div>
         <Button onClick={() => setConfirmOpen(true)} className="rounded-full">
@@ -210,11 +193,18 @@ function PatientRegistrationPage() {
         </Button>
       </div>
 
+      {feedback && (
+        <div className="mb-5 flex items-center gap-3 rounded-2xl border border-success/25 bg-success/10 p-4 text-sm font-semibold">
+          <CheckCircle2 className="h-5 w-5 text-success" />
+          {feedback}
+        </div>
+      )}
+
       <div className="grid gap-5 lg:grid-cols-12">
         <BiCard
           className="lg:col-span-12"
-          title="Formulários clínicos detalhados"
-          subtitle={`${formCompleteness} de ${clinicalFormTemplates.length} formulários com dados preenchidos`}
+          title="Formularios clinicos detalhados"
+          subtitle={`${formCompleteness} de ${clinicalFormTemplates.length} formularios com dados preenchidos`}
         >
           <div className="space-y-4">
             {clinicalFormTemplates.map((template, index) => (
@@ -260,7 +250,7 @@ function PatientRegistrationPage() {
                         onClick={() => setConfirmSummaryOpen(true)}
                       >
                         <CheckCircle2 className="h-4 w-4" />
-                        Salvar resumo clínico
+                        Salvar resumo clinico
                       </Button>
                     </div>
                   )}
@@ -271,11 +261,11 @@ function PatientRegistrationPage() {
         </BiCard>
 
         <BiCard
-          className="lg:col-span-7"
-          title="Histórico inicial"
-          subtitle="Eventos do cadastro e formulários clínicos"
+          className="lg:col-span-12"
+          title="Historico inicial"
+          subtitle="Eventos do cadastro e formularios clinicos"
         >
-          <div className="space-y-2">
+          <div className="grid gap-2 md:grid-cols-2">
             {history.map((item, index) => (
               <div
                 key={`${item}-${index}`}
@@ -286,43 +276,14 @@ function PatientRegistrationPage() {
             ))}
           </div>
         </BiCard>
-
-        <BiCard
-          className="lg:col-span-5"
-          title="Primeiro recado"
-          subtitle="Mensagem opcional para aparecer no painel do paciente"
-        >
-          <TextArea
-            label="Recado da equipe"
-            value={draft.firstMessage}
-            onChange={(value) => updateField("firstMessage", value)}
-            placeholder="Ex.: Seja bem-vindo ao acompanhamento remoto..."
-          />
-          <Button
-            variant="outline"
-            className="mt-3 rounded-full"
-            onClick={() => {
-              setFeedback("Recado inicial preparado para envio após o cadastro.");
-              setHistory((current) => ["Recado inicial preparado para o paciente.", ...current]);
-            }}
-          >
-            <Send className="h-4 w-4" />
-            Preparar recado
-          </Button>
-          {feedback && (
-            <div className="mt-3 rounded-2xl border border-success/25 bg-success/10 p-3 text-sm font-semibold text-success">
-              {feedback}
-            </div>
-          )}
-        </BiCard>
       </div>
 
       <AlertDialog open={confirmSummaryOpen} onOpenChange={setConfirmSummaryOpen}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Salvar resumo clínico</AlertDialogTitle>
+            <AlertDialogTitle>Salvar resumo clinico</AlertDialogTitle>
             <AlertDialogDescription>
-              Deseja salvar o resumo clínico dentro da Identificação Universal deste paciente?
+              Deseja salvar o resumo clinico dentro da Identificação Universal deste paciente?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -337,23 +298,26 @@ function PatientRegistrationPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar cadastro do paciente</AlertDialogTitle>
             <AlertDialogDescription>
-              O login será gerado obrigatoriamente pelo CPF informado. A senha será criada
-              automaticamente e o Registro Universal será {universalRecord}.
+              O cadastro sera salvo como registro clinico da equipe. O Registro Universal sera{" "}
+              {universalRecord}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Voltar</AlertDialogCancel>
-            <AlertDialogAction onClick={createPatient}>Cadastrar e gerar acesso</AlertDialogAction>
+            <AlertDialogAction onClick={createPatient}>Confirmar cadastro</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={credentialsOpen} onOpenChange={setCredentialsOpen}>
+      <Dialog open={registeredOpen} onOpenChange={setRegisteredOpen}>
         <DialogContent className="max-w-xl rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Acesso do paciente gerado</DialogTitle>
+            <DialogTitle>Cadastro confirmado</DialogTitle>
+            <DialogDescription>
+              O paciente foi registrado para acompanhamento interno da equipe assistencial.
+            </DialogDescription>
           </DialogHeader>
-          <div className="print-area rounded-2xl border border-border bg-secondary/25 p-5">
+          <div className="rounded-2xl border border-border bg-secondary/25 p-5">
             <div className="flex items-center gap-3">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-success/15 text-success">
                 <ShieldCheck className="h-5 w-5" />
@@ -363,56 +327,13 @@ function PatientRegistrationPage() {
                 <div className="text-sm text-muted-foreground">{universalRecord}</div>
               </div>
             </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Credential label="Login" value={credentials?.login ?? onlyDigits(draft.cpf)} />
-              <Credential label="Senha provisória" value={credentials?.password ?? ""} />
-            </div>
           </div>
-          <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={printCredentials}>
-              <Printer className="h-4 w-4" />
-              Imprimir
-            </Button>
-            <Button onClick={() => setCredentialsOpen(false)}>Concluir</Button>
+          <DialogFooter>
+            <Button onClick={() => setRegisteredOpen(false)}>Concluir</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppShell>
-  );
-}
-
-function TextArea({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <label className="block text-sm font-medium">
-      {label}
-      <textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        className="mt-1 min-h-24 w-full resize-none rounded-xl border border-border bg-background p-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-ring"
-      />
-    </label>
-  );
-}
-
-function Credential({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
-      <div className="mt-2 font-display text-2xl font-semibold">{value || "--"}</div>
-    </div>
   );
 }
 
@@ -431,14 +352,6 @@ function createUniversalRecord(cpf: string) {
   return firstFive.length === 5 ? `p-${firstFive}` : "p-_____";
 }
 
-function generatePassword() {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from(
-    { length: 8 },
-    () => alphabet[Math.floor(Math.random() * alphabet.length)],
-  ).join("");
-}
-
 function calculateAge(value: string) {
   if (!value) return null;
   const parts = value.includes("-")
@@ -446,7 +359,7 @@ function calculateAge(value: string) {
     : value.split("/").map(Number);
   const [day, month, year] = parts;
   if (!day || !month || !year) return null;
-  const today = new Date(2026, 4, 20);
+  const today = new Date();
   let age = today.getFullYear() - year;
   const birthdayPassed =
     today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day);

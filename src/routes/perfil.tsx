@@ -10,7 +10,6 @@ import {
   Mail,
   Phone,
   Plus,
-  Save,
   ShieldCheck,
   Trash2,
   UserRound,
@@ -39,18 +38,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type ProfileType = "paciente" | "equipe";
 type EditableProfile = {
   name: string;
   role: string;
   id: string;
   email: string;
   phone: string;
-  birth: string;
-  carePlan: string;
-  contact: string;
+  credential: string;
+  careArea: string;
+  institution: string;
   photo: string | null;
 };
+
 type TeamMember = {
   name: string;
   role: "Médico" | "Enfermeiro" | "Técnico de enfermagem";
@@ -60,44 +59,31 @@ type TeamMember = {
 };
 
 export const Route = createFileRoute("/perfil")({
-  validateSearch: (search: Record<string, unknown>): { tipo: ProfileType } => ({
-    tipo: search.tipo === "equipe" ? "equipe" : "paciente",
+  validateSearch: (): { tipo: "equipe" } => ({
+    tipo: "equipe",
   }),
   head: () => ({
     meta: [
-      { title: "Detalhes do perfil · Card.io" },
+      { title: "Detalhes do perfil - Card.io" },
       {
         name: "description",
-        content: "Página de detalhes, edição e segurança do perfil do usuário.",
+        content: "Pagina de detalhes, edicao e segurança do perfil da equipe.",
       },
     ],
   }),
   component: ProfileDetails,
 });
 
-const initialProfiles: Record<ProfileType, EditableProfile> = {
-  paciente: {
-    name: "Maria S. Oliveira",
-    role: "Paciente",
-    id: "P-1042",
-    email: "maria.oliveira@email.com",
-    phone: "(11) 99999-1204",
-    birth: "03/05/1959",
-    carePlan: "Monitoramento de insuficiência cardíaca",
-    contact: "Dr. Henrique Lima e Enf. Carla",
-    photo: null,
-  },
-  equipe: {
-    name: "Dr. Henrique Lima",
-    role: "Médico cardiologista",
-    id: "CRM-SP 123456",
-    email: "henrique.lima@hospital.edu",
-    phone: "(11) 3000-0000",
-    birth: "CRM-SP 123456",
-    carePlan: "Equipe de insuficiência cardíaca",
-    contact: "Hospital Universitário · Cardiologia",
-    photo: null,
-  },
+const initialProfile: EditableProfile = {
+  name: "Dr. Henrique Lima",
+  role: "Médico cardiologista",
+  id: "CRM-SP 123456",
+  email: "henrique.lima@hospital.edu",
+  phone: "(11) 3000-0000",
+  credential: "CRM-SP 123456",
+  careArea: "Equipe de insuficiencia cardiaca",
+  institution: "Hospital Universitario - Cardiologia",
+  photo: null,
 };
 
 const initialTeamMembers: TeamMember[] = [
@@ -117,19 +103,23 @@ const initialTeamMembers: TeamMember[] = [
   },
 ];
 
+const credentialByRole: Record<TeamMember["role"], string> = {
+  Médico: "CRM",
+  Enfermeiro: "COREN",
+  "Técnico de enfermagem": "",
+};
+
 const emptyTeamMember: TeamMember = {
   name: "",
   role: "Médico",
   email: "",
-  credential: "",
+  credential: credentialByRole.Médico,
   phone: "",
 };
 
 function ProfileDetails() {
-  const { tipo } = Route.useSearch();
-  const isPatient = tipo === "paciente";
-  const [profiles, setProfiles] = useState(initialProfiles);
-  const [draft, setDraft] = useState<EditableProfile>(initialProfiles[tipo]);
+  const [profile, setProfile] = useState(initialProfile);
+  const [draft, setDraft] = useState<EditableProfile>(initialProfile);
   const [editOpen, setEditOpen] = useState(false);
   const [confirmEditOpen, setConfirmEditOpen] = useState(false);
   const [confirmPhotoRemoval, setConfirmPhotoRemoval] = useState(false);
@@ -147,9 +137,7 @@ function ProfileDetails() {
   const [confirmProfileDeleteOpen, setConfirmProfileDeleteOpen] = useState(false);
   const [profileDeleted, setProfileDeleted] = useState(false);
 
-  const profile = profiles[tipo];
   const initials = getInitials(profile.name);
-  const largeText = !isPatient;
 
   function openEditDialog() {
     setDraft(profile);
@@ -157,7 +145,7 @@ function ProfileDetails() {
   }
 
   function confirmProfileSave() {
-    setProfiles((current) => ({ ...current, [tipo]: draft }));
+    setProfile(draft);
     setFeedback("Dados do perfil atualizados com sucesso.");
     setConfirmEditOpen(false);
     setEditOpen(false);
@@ -171,25 +159,25 @@ function ProfileDetails() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const photo = URL.createObjectURL(file);
-    setProfiles((current) => ({
-      ...current,
-      [tipo]: { ...current[tipo], photo },
-    }));
+    setProfile((current) => ({ ...current, photo: URL.createObjectURL(file) }));
     setFeedback("Foto do perfil atualizada.");
   }
 
   function removePhoto() {
-    setProfiles((current) => ({
-      ...current,
-      [tipo]: { ...current[tipo], photo: null },
-    }));
+    setProfile((current) => ({ ...current, photo: null }));
     setFeedback("Foto do perfil removida.");
     setConfirmPhotoRemoval(false);
   }
 
   function updateNewMember(field: keyof TeamMember, value: string) {
-    setNewMember((current) => ({ ...current, [field]: value }) as TeamMember);
+    setNewMember((current) => {
+      if (field === "role") {
+        const role = value as TeamMember["role"];
+        return { ...current, role, credential: credentialByRole[role] };
+      }
+
+      return { ...current, [field]: value } as TeamMember;
+    });
   }
 
   function createTeamMember() {
@@ -242,20 +230,20 @@ function ProfileDetails() {
 
   if (profileDeleted) {
     return (
-      <AppShell profile={isPatient ? "patient" : "team"}>
+      <AppShell profile="team">
         <div className="rounded-3xl border border-danger/25 bg-danger/5 p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-danger">
-            Perfil excluído
+            Perfil excluido
           </p>
           <h1 className="mt-2 font-display text-3xl font-semibold">{profile.name}</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            A exclusão foi aplicada nesta sessão após confirmação.
+            A exclusao foi aplicada nesta sessao apos confirmacao.
           </p>
           <Link
-            to={isPatient ? "/paciente" : "/equipe"}
+            to="/equipe"
             className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
           >
-            Voltar
+            Voltar ao dashboard
           </Link>
         </div>
       </AppShell>
@@ -263,28 +251,24 @@ function ProfileDetails() {
   }
 
   return (
-    <AppShell profile={isPatient ? "patient" : "team"}>
+    <AppShell profile="team">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <Link
-            to={isPatient ? "/paciente" : "/equipe"}
+            to="/equipe"
             className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Voltar
+            Voltar ao dashboard
           </Link>
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Perfil
+            Perfil da equipe
           </p>
-          <h1
-            className={`mt-1 font-display font-semibold tracking-tight ${largeText ? "text-4xl" : "text-3xl"}`}
-          >
+          <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">
             Detalhes do perfil
           </h1>
-          <p
-            className={`mt-2 max-w-3xl text-muted-foreground ${largeText ? "text-base" : "text-sm"}`}
-          >
-            Visualize e atualize dados do perfil, foto e sessão de acesso em uma página dedicada.
+          <p className="mt-2 max-w-3xl text-base text-muted-foreground">
+            Visualize e atualize dados profissionais, foto, sessao de acesso e membros da equipe.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -315,177 +299,142 @@ function ProfileDetails() {
       )}
 
       <div className="grid gap-5 lg:grid-cols-12">
-        <BiCard className="lg:col-span-4" title="Dados principais">
-          <div className="flex flex-col items-center text-center">
-            <Avatar className="h-28 w-28 border border-border">
-              {profile.photo && <AvatarImage src={profile.photo} alt={profile.name} />}
-              <AvatarFallback className="bg-primary/15 text-3xl font-semibold text-primary">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className={`mt-4 font-semibold ${largeText ? "text-2xl" : "text-xl"}`}>
-              {profile.name}
-            </div>
-            <div className={`${largeText ? "text-base" : "text-sm"} text-muted-foreground`}>
-              {profile.role}
-            </div>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition hover:bg-accent hover:text-accent-foreground">
-                <Camera className="h-4 w-4" />
-                {profile.photo ? "Editar foto" : "Adicionar foto"}
-                <input type="file" accept="image/*" className="sr-only" onChange={updatePhoto} />
-              </label>
-              {profile.photo && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setConfirmPhotoRemoval(true)}
-                  className="text-danger hover:text-danger"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Remover
+        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] lg:col-span-12">
+          <div className="h-24 bg-gradient-to-r from-secondary via-background to-warning/20" />
+          <div className="p-5 pt-0 sm:p-6 sm:pt-0">
+            <div className="-mt-11 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <Avatar className="h-24 w-24 border-4 border-card shadow-[var(--shadow-card)]">
+                  {profile.photo && <AvatarImage src={profile.photo} alt={profile.name} />}
+                  <AvatarFallback className="bg-primary/15 text-2xl font-semibold text-primary">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="pb-1">
+                  <div className="h-12 text-2xl font-semibold tracking-tight">{profile.name}</div>
+                  <div className="mt-1 text-sm font-medium text-muted-foreground">
+                    {profile.role}
+                  </div>
+                  <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                    <Mail className="h-4 w-4 text-primary" />
+                    {profile.email}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition hover:bg-accent hover:text-accent-foreground">
+                  <Camera className="h-4 w-4" />
+                  {profile.photo ? "Editar foto" : "Adicionar foto"}
+                  <input type="file" accept="image/*" className="sr-only" onChange={updatePhoto} />
+                </label>
+                {profile.photo && (
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onClick={() => setConfirmPhotoRemoval(true)}
+                    className="text-danger hover:text-danger"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Remover
+                  </Button>
+                )}
+                <Button onClick={openEditDialog} size="default">
+                  <Edit3 className="h-4 w-4" />
+                  Editar dados
                 </Button>
-              )}
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <ProfileField
+                icon={<UserRound className="h-4 w-4" />}
+                label="Identificação"
+                value={profile.id}
+              />
+              <ProfileField
+                icon={<HeartPulse className="h-4 w-4" />}
+                label="Registro profissional"
+                value={profile.credential}
+              />
+              <ProfileField
+                icon={<Phone className="h-4 w-4" />}
+                label="Telefone"
+                value={profile.phone}
+              />
+              <ProfileField
+                icon={<ShieldCheck className="h-4 w-4" />}
+                label="Áreaassistencial"
+                value={profile.careArea}
+              />
+              <ProfileField
+                icon={<UsersRound className="h-4 w-4" />}
+                label="Instituição"
+                value={profile.institution}
+              />
+              <ProfileField
+                icon={<Mail className="h-4 w-4" />}
+                label="E-mail"
+                value={profile.email}
+              />
+            </div>
+
+            <div className="mt-6 border-t border-border pt-5">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                  <ShieldCheck className="h-4 w-4" />
+                </span>
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Segurança do perfil
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    Dados exibidos sao sinteticos para demonstracao. Alteracoes feitas aqui
+                    atualizam a experiencia da sessao atual.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="mt-6 space-y-3">
-            <DetailLine
-              large={largeText}
-              icon={<UserRound className="h-4 w-4" />}
-              label="Identificação"
-              value={profile.id}
-            />
-            <DetailLine
-              large={largeText}
-              icon={<Mail className="h-4 w-4" />}
-              label="E-mail"
-              value={profile.email}
-            />
-            <DetailLine
-              large={largeText}
-              icon={<Phone className="h-4 w-4" />}
-              label="Telefone"
-              value={profile.phone}
-            />
-            <DetailLine
-              large={largeText}
-              icon={<HeartPulse className="h-4 w-4" />}
-              label={isPatient ? "Data de nascimento" : "Registro profissional"}
-              value={profile.birth}
-            />
-          </div>
-        </BiCard>
+        </section>
 
         <BiCard
-          className="lg:col-span-8"
-          title="Detalhes do perfil"
+          className="lg:col-span-12 [&_h3]:text-xl"
+          title="Perfis da equipe"
           action={
-            <Button onClick={openEditDialog} size="sm" className="rounded-full">
-              <Save className="h-4 w-4" />
-              Editar dados
+            <Button
+              onClick={() => {
+                setNewMember(emptyTeamMember);
+                setNewMemberOpen(true);
+              }}
+              size="default"
+              className="rounded-full"
+            >
+              <Plus className="h-4 w-4" />
+              Novo perfil
             </Button>
           }
         >
-          <div className="grid gap-4 md:grid-cols-2">
-            <InfoBlock
-              large={largeText}
-              label={isPatient ? "Plano de cuidado" : "Área assistencial"}
-              value={profile.carePlan}
-            />
-            <InfoBlock
-              large={largeText}
-              label={isPatient ? "Equipe responsável" : "Instituição"}
-              value={profile.contact}
-            />
-          </div>
-          <div className="mt-5 rounded-2xl border border-border bg-secondary/35 p-5">
-            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              <ShieldCheck className="h-4 w-4 text-primary" />
-              Segurança do perfil
-            </div>
-            <p
-              className={`leading-relaxed text-muted-foreground ${largeText ? "text-base" : "text-sm"}`}
-            >
-              Dados exibidos são sintéticos para demonstração. Alterações feitas aqui atualizam a
-              experiência da sessão atual.
-            </p>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {teamMembers.map((member, index) => (
+              <TeamMemberCard
+                key={`${member.email}-${member.credential}`}
+                member={member}
+                onEdit={() => openMemberEdit(member, index)}
+                onDelete={() => {
+                  setMemberPendingDelete(index);
+                  setConfirmMemberDeleteOpen(true);
+                }}
+              />
+            ))}
           </div>
         </BiCard>
-
-        {!isPatient && (
-          <BiCard
-            className="lg:col-span-12"
-            title="Perfis da equipe"
-            subtitle="Disponível para médico ou enfermeiro chefe criar acessos assistenciais"
-            action={
-              <Button
-                onClick={() => {
-                  setNewMember(emptyTeamMember);
-                  setNewMemberOpen(true);
-                }}
-                size="sm"
-                className="rounded-full"
-              >
-                <Plus className="h-4 w-4" />
-                Novo perfil
-              </Button>
-            }
-          >
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {teamMembers.map((member, index) => (
-                <div
-                  key={`${member.email}-${member.credential}`}
-                  className="rounded-2xl border border-border bg-secondary/25 p-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/15 text-primary">
-                      <UsersRound className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-lg font-semibold">{member.name}</div>
-                      <div className="text-sm text-muted-foreground">{member.role}</div>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2 text-sm">
-                    <div className="font-medium">{member.credential}</div>
-                    <div className="text-muted-foreground">{member.email}</div>
-                    <div className="text-muted-foreground">{member.phone}</div>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openMemberEdit(member, index)}
-                    >
-                      <Edit3 className="h-4 w-4" />
-                      Editar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setMemberPendingDelete(index);
-                        setConfirmMemberDeleteOpen(true);
-                      }}
-                      className="text-danger hover:text-danger"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Excluir
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </BiCard>
-        )}
       </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl rounded-2xl">
           <DialogHeader>
             <DialogTitle>Editar detalhes do perfil</DialogTitle>
-            <DialogDescription>Revise os dados antes de confirmar a alteração.</DialogDescription>
+            <DialogDescription>Revise os dados antes de confirmar a alteracao.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 md:grid-cols-2">
             <ProfileInput
@@ -509,9 +458,9 @@ function ProfileDetails() {
               onChange={(value) => updateDraft("phone", value)}
             />
             <ProfileInput
-              label={isPatient ? "Data de nascimento" : "CRM ou equivalente"}
-              value={draft.birth}
-              onChange={(value) => updateDraft("birth", value)}
+              label="CRM ou equivalente"
+              value={draft.credential}
+              onChange={(value) => updateDraft("credential", value)}
             />
             <ProfileInput
               label="Identificação"
@@ -519,21 +468,21 @@ function ProfileDetails() {
               onChange={(value) => updateDraft("id", value)}
             />
             <ProfileInput
-              label={isPatient ? "Plano de cuidado" : "Área assistencial"}
-              value={draft.carePlan}
-              onChange={(value) => updateDraft("carePlan", value)}
+              label="Áreaassistencial"
+              value={draft.careArea}
+              onChange={(value) => updateDraft("careArea", value)}
             />
             <ProfileInput
-              label={isPatient ? "Equipe responsável" : "Instituição"}
-              value={draft.contact}
-              onChange={(value) => updateDraft("contact", value)}
+              label="Instituição"
+              value={draft.institution}
+              onChange={(value) => updateDraft("institution", value)}
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-2">
             <Button variant="outline" onClick={() => setEditOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={() => setConfirmEditOpen(true)}>Salvar alterações</Button>
+            <Button onClick={() => setConfirmEditOpen(true)}>Salvar alteracoes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -546,40 +495,7 @@ function ProfileDetails() {
               Informe função, identificação profissional e contato do novo membro.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-3 md:grid-cols-2">
-            <ProfileInput
-              label="Nome completo"
-              value={newMember.name}
-              onChange={(value) => updateNewMember("name", value)}
-            />
-            <label className="block text-sm font-medium">
-              Função
-              <select
-                value={newMember.role}
-                onChange={(event) => updateNewMember("role", event.target.value)}
-                className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option>Médico</option>
-                <option>Enfermeiro</option>
-                <option>Técnico de enfermagem</option>
-              </select>
-            </label>
-            <ProfileInput
-              label="E-mail institucional"
-              value={newMember.email}
-              onChange={(value) => updateNewMember("email", value)}
-            />
-            <ProfileInput
-              label="CRM, COREN ou equivalente"
-              value={newMember.credential}
-              onChange={(value) => updateNewMember("credential", value)}
-            />
-            <ProfileInput
-              label="Telefone"
-              value={newMember.phone}
-              onChange={(value) => updateNewMember("phone", value)}
-            />
-          </div>
+          <TeamMemberForm member={newMember} onChange={updateNewMember} />
           <DialogFooter className="gap-2 sm:gap-2">
             <Button variant="outline" onClick={() => setNewMemberOpen(false)}>
               Cancelar
@@ -596,48 +512,15 @@ function ProfileDetails() {
               <DialogHeader>
                 <DialogTitle>Editar perfil da equipe</DialogTitle>
                 <DialogDescription>
-                  Confirme antes de aplicar as alterações ao perfil profissional.
+                  Confirme antes de aplicar as alteracoes ao perfil profissional.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-3 md:grid-cols-2">
-                <ProfileInput
-                  label="Nome completo"
-                  value={memberDraft.name}
-                  onChange={(value) => updateMemberDraft("name", value)}
-                />
-                <label className="block text-sm font-medium">
-                  Função
-                  <select
-                    value={memberDraft.role}
-                    onChange={(event) => updateMemberDraft("role", event.target.value)}
-                    className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option>Médico</option>
-                    <option>Enfermeiro</option>
-                    <option>Técnico de enfermagem</option>
-                  </select>
-                </label>
-                <ProfileInput
-                  label="E-mail institucional"
-                  value={memberDraft.email}
-                  onChange={(value) => updateMemberDraft("email", value)}
-                />
-                <ProfileInput
-                  label="CRM, COREN ou equivalente"
-                  value={memberDraft.credential}
-                  onChange={(value) => updateMemberDraft("credential", value)}
-                />
-                <ProfileInput
-                  label="Telefone"
-                  value={memberDraft.phone}
-                  onChange={(value) => updateMemberDraft("phone", value)}
-                />
-              </div>
+              <TeamMemberForm member={memberDraft} onChange={updateMemberDraft} />
               <DialogFooter className="gap-2 sm:gap-2">
                 <Button variant="outline" onClick={() => setMemberDraft(null)}>
                   Cancelar
                 </Button>
-                <Button onClick={() => setConfirmMemberSaveOpen(true)}>Salvar alterações</Button>
+                <Button onClick={() => setConfirmMemberSaveOpen(true)}>Salvar alteracoes</Button>
               </DialogFooter>
             </>
           )}
@@ -647,9 +530,9 @@ function ProfileDetails() {
       <AlertDialog open={confirmEditOpen} onOpenChange={setConfirmEditOpen}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar edição</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar edicao</AlertDialogTitle>
             <AlertDialogDescription>
-              Deseja salvar as alterações feitas nos detalhes do perfil?
+              Deseja salvar as alteracoes feitas nos detalhes do perfil?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -664,7 +547,7 @@ function ProfileDetails() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir perfil</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação removerá o perfil da visualização ativa desta sessão. Deseja continuar?
+              Esta acao removera o perfil da visualizacao ativa desta sessao. Deseja continuar?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -677,14 +560,14 @@ function ProfileDetails() {
       <AlertDialog open={confirmMemberSaveOpen} onOpenChange={setConfirmMemberSaveOpen}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar edição do perfil</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar edicao do perfil</AlertDialogTitle>
             <AlertDialogDescription>
-              Deseja salvar as alterações deste membro da equipe?
+              Deseja salvar as alteracoes deste membro da equipe?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Voltar</AlertDialogCancel>
-            <AlertDialogAction onClick={saveMemberDraft}>Confirmar edição</AlertDialogAction>
+            <AlertDialogAction onClick={saveMemberDraft}>Confirmar edicao</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -694,7 +577,7 @@ function ProfileDetails() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir perfil da equipe</AlertDialogTitle>
             <AlertDialogDescription>
-              O perfil selecionado será removido da equipe nesta sessão.
+              O perfil selecionado sera removido da equipe nesta sessao.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -709,7 +592,7 @@ function ProfileDetails() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remover foto</AlertDialogTitle>
             <AlertDialogDescription>
-              A foto atual será removida do perfil desta sessão.
+              A foto atual sera removida do perfil desta sessao.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -724,12 +607,12 @@ function ProfileDetails() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar novo perfil</AlertDialogTitle>
             <AlertDialogDescription>
-              Deseja criar este perfil para a equipe médica?
+              Deseja criar este perfil para a equipe medica?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Voltar</AlertDialogCancel>
-            <AlertDialogAction onClick={createTeamMember}>Confirmar criação</AlertDialogAction>
+            <AlertDialogAction onClick={createTeamMember}>Confirmar criacao</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -737,7 +620,7 @@ function ProfileDetails() {
       <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar saída</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar saida</AlertDialogTitle>
             <AlertDialogDescription>
               Deseja sair do perfil e voltar para a tela de login?
             </AlertDialogDescription>
@@ -754,37 +637,105 @@ function ProfileDetails() {
   );
 }
 
-function DetailLine({
-  icon,
-  label,
-  value,
-  large,
+function TeamMemberCard({
+  member,
+  onEdit,
+  onDelete,
 }: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  large?: boolean;
+  member: TeamMember;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   return (
-    <div className="flex gap-3 rounded-2xl border border-border bg-background p-3">
-      <span className="mt-0.5 text-primary">{icon}</span>
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {label}
+    <div className="rounded-2xl border border-border bg-secondary/25 p-4">
+      <div className="flex items-start gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/15 text-primary">
+          <UsersRound className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <div className="text-lg font-semibold">{member.name}</div>
+          <div className="text-sm text-muted-foreground">{member.role}</div>
         </div>
-        <div className={`mt-0.5 font-medium ${large ? "text-base" : "text-sm"}`}>{value}</div>
+      </div>
+      <div className="mt-4 space-y-2 text-sm">
+        <div className="font-medium">{member.credential}</div>
+        <div className="text-muted-foreground">{member.email}</div>
+        <div className="text-muted-foreground">{member.phone}</div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={onEdit}>
+          <Edit3 className="h-4 w-4" />
+          Editar
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onDelete}
+          className="text-danger hover:text-danger"
+        >
+          <Trash2 className="h-4 w-4" />
+          Excluir
+        </Button>
       </div>
     </div>
   );
 }
 
-function InfoBlock({ label, value, large }: { label: string; value: string; large?: boolean }) {
+function TeamMemberForm({
+  member,
+  onChange,
+}: {
+  member: TeamMember;
+  onChange: (field: keyof TeamMember, value: string) => void;
+}) {
   return (
-    <div className="rounded-2xl border border-border bg-secondary/35 p-4">
-      <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <div className="grid gap-3 md:grid-cols-2">
+      <ProfileInput
+        label="Nome completo"
+        value={member.name}
+        onChange={(value) => onChange("name", value)}
+      />
+      <label className="block text-sm font-medium">
+        Função
+        <select
+          value={member.role}
+          onChange={(event) => onChange("role", event.target.value)}
+          className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <option>Médico</option>
+          <option>Enfermeiro</option>
+          <option>Técnico de enfermagem</option>
+        </select>
+      </label>
+      <ProfileInput
+        label="E-mail institucional"
+        value={member.email}
+        onChange={(value) => onChange("email", value)}
+      />
+      <ProfileInput
+        label="CRM, COREN ou equivalente"
+        value={member.credential}
+        onChange={(value) => onChange("credential", value)}
+      />
+      <ProfileInput
+        label="Telefone"
+        value={member.phone}
+        onChange={(value) => onChange("phone", value)}
+      />
+    </div>
+  );
+}
+
+function ProfileField({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return (
+    <div>
+      <div className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
-      <div className={`mt-2 font-semibold ${large ? "text-xl" : "text-base"}`}>{value}</div>
+      <div className="flex min-h-12 items-center gap-3 rounded-xl border border-border bg-secondary/35 px-3 py-2 text-sm font-medium">
+        <span className="text-primary">{icon}</span>
+        <span className="min-w-0 break-words">{value}</span>
+      </div>
     </div>
   );
 }
