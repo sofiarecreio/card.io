@@ -67,7 +67,7 @@ export const Route = createFileRoute("/perfil")({
       { title: "Detalhes do perfil - Card.io" },
       {
         name: "description",
-        content: "Pagina de detalhes, edicao e segurança do perfil da equipe.",
+        content: "Pagina de detalhes, edição e segurança do perfil da equipe.",
       },
     ],
   }),
@@ -530,7 +530,7 @@ function ProfileDetails() {
       <AlertDialog open={confirmEditOpen} onOpenChange={setConfirmEditOpen}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar edicao</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar edição</AlertDialogTitle>
             <AlertDialogDescription>
               Deseja salvar as alteracoes feitas nos detalhes do perfil?
             </AlertDialogDescription>
@@ -560,14 +560,14 @@ function ProfileDetails() {
       <AlertDialog open={confirmMemberSaveOpen} onOpenChange={setConfirmMemberSaveOpen}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar edicao do perfil</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar edição do perfil</AlertDialogTitle>
             <AlertDialogDescription>
               Deseja salvar as alteracoes deste membro da equipe?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Voltar</AlertDialogCancel>
-            <AlertDialogAction onClick={saveMemberDraft}>Confirmar edicao</AlertDialogAction>
+            <AlertDialogAction onClick={saveMemberDraft}>Confirmar edição</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -612,7 +612,7 @@ function ProfileDetails() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Voltar</AlertDialogCancel>
-            <AlertDialogAction onClick={createTeamMember}>Confirmar criacao</AlertDialogAction>
+            <AlertDialogAction onClick={createTeamMember}>Confirmar criação</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

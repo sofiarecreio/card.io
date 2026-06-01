@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ArrowLeft, CheckCircle2, FileText, ShieldCheck } from "lucide-react";
+import { apiClient } from "@/lib/api/client";
 import {
   clinicalFormTemplates,
   cloneClinicalValues,
@@ -161,6 +162,20 @@ function PatientRegistrationPage() {
     }
 
     const message = `Paciente cadastrado no prontuario clinico com Registro Universal ${universalRecord}.`;
+    void apiClient
+      .createPatient({
+        id: universalRecord,
+        name: draft.name || "Novo paciente",
+        cpf: onlyDigits(draft.cpf),
+        birthDate: draft.birth || null,
+        sex: draft.sex,
+        email: draft.email || null,
+        phone: draft.phone || null,
+        address: draft.address || null,
+        age: age ?? 0,
+      })
+      .then(({ patient }) => apiClient.updateClinicalSummary(patient.id, draft.summaryText))
+      .catch(() => undefined);
     setFeedback(message);
     setHistory((current) => [message, ...current]);
     setRegisteredOpen(true);

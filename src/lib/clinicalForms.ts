@@ -223,15 +223,13 @@ export const clinicalFormTemplates: ClinicalFormTemplate[] = [
             id: "recordId",
             label: "Record ID / Registro Universal",
             type: "readonly",
-            helper:
-              "Gerado automaticamente no formato p-XXXXX a partir dos cinco primeiros dígitos do CPF.",
           },
           { id: "cpf", label: "CPF do participante", type: "text", placeholder: "Somente números" },
           { id: "dataAvaliacao", label: "Data da avaliação", type: "date" },
           { id: "dataNascimento", label: "Data de nascimento do participante", type: "date" },
           {
             id: "idadeCalculada",
-            label: "Idade calculada automaticamente",
+            label: "Idade",
             type: "readonly",
           },
         ],
@@ -248,6 +246,7 @@ export const clinicalFormTemplates: ClinicalFormTemplate[] = [
             options: [
               { value: "Masculino", label: "M - Masculino" },
               { value: "Feminino", label: "F - Feminino" },
+              { value: "Outro", label: "Outro" },
             ],
           },
           {
@@ -260,6 +259,7 @@ export const clinicalFormTemplates: ClinicalFormTemplate[] = [
               { value: "Pardo", label: "Pardo" },
               { value: "Amarelo", label: "Amarelo" },
               { value: "Indígena", label: "Indígena" },
+              { value: "Outro", label: "Outro" },
             ],
           },
           {

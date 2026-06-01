@@ -15,6 +15,20 @@ import { Route as EquipeRouteImport } from './routes/equipe'
 import { Route as CadastroPacienteRouteImport } from './routes/cadastro-paciente'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProntuarioPatientIdRouteImport } from './routes/prontuario.$patientId'
+import { Route as ApiTeamRouteImport } from './routes/api.team'
+import { Route as ApiProfileRouteImport } from './routes/api.profile'
+import { Route as ApiPatientsRouteImport } from './routes/api.patients'
+import { Route as ApiMeasurementsRouteImport } from './routes/api.measurements'
+import { Route as ApiKpisRouteImport } from './routes/api.kpis'
+import { Route as ApiAppointmentsRouteImport } from './routes/api.appointments'
+import { Route as ApiAlertsRouteImport } from './routes/api.alerts'
+import { Route as ApiRecordsPatientIdRouteImport } from './routes/api.records.$patientId'
+import { Route as ApiPatientsPatientIdRouteImport } from './routes/api.patients.$patientId'
+import { Route as ApiMeasurementsPatientIdRouteImport } from './routes/api.measurements.$patientId'
+import { Route as ApiAuthMeRouteImport } from './routes/api.auth.me'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api.auth.logout'
+import { Route as ApiAuthLoginRouteImport } from './routes/api.auth.login'
+import { Route as ApiRecordsPatientIdEvolutionsRouteImport } from './routes/api.records.$patientId.evolutions'
 
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
@@ -46,6 +60,78 @@ const ProntuarioPatientIdRoute = ProntuarioPatientIdRouteImport.update({
   path: '/prontuario/$patientId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTeamRoute = ApiTeamRouteImport.update({
+  id: '/api/team',
+  path: '/api/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProfileRoute = ApiProfileRouteImport.update({
+  id: '/api/profile',
+  path: '/api/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPatientsRoute = ApiPatientsRouteImport.update({
+  id: '/api/patients',
+  path: '/api/patients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMeasurementsRoute = ApiMeasurementsRouteImport.update({
+  id: '/api/measurements',
+  path: '/api/measurements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiKpisRoute = ApiKpisRouteImport.update({
+  id: '/api/kpis',
+  path: '/api/kpis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAppointmentsRoute = ApiAppointmentsRouteImport.update({
+  id: '/api/appointments',
+  path: '/api/appointments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAlertsRoute = ApiAlertsRouteImport.update({
+  id: '/api/alerts',
+  path: '/api/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRecordsPatientIdRoute = ApiRecordsPatientIdRouteImport.update({
+  id: '/api/records/$patientId',
+  path: '/api/records/$patientId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPatientsPatientIdRoute = ApiPatientsPatientIdRouteImport.update({
+  id: '/$patientId',
+  path: '/$patientId',
+  getParentRoute: () => ApiPatientsRoute,
+} as any)
+const ApiMeasurementsPatientIdRoute =
+  ApiMeasurementsPatientIdRouteImport.update({
+    id: '/$patientId',
+    path: '/$patientId',
+    getParentRoute: () => ApiMeasurementsRoute,
+  } as any)
+const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
+  id: '/api/auth/login',
+  path: '/api/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRecordsPatientIdEvolutionsRoute =
+  ApiRecordsPatientIdEvolutionsRouteImport.update({
+    id: '/evolutions',
+    path: '/evolutions',
+    getParentRoute: () => ApiRecordsPatientIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,7 +139,21 @@ export interface FileRoutesByFullPath {
   '/equipe': typeof EquipeRoute
   '/paciente': typeof PacienteRoute
   '/perfil': typeof PerfilRoute
+  '/api/alerts': typeof ApiAlertsRoute
+  '/api/appointments': typeof ApiAppointmentsRoute
+  '/api/kpis': typeof ApiKpisRoute
+  '/api/measurements': typeof ApiMeasurementsRouteWithChildren
+  '/api/patients': typeof ApiPatientsRouteWithChildren
+  '/api/profile': typeof ApiProfileRoute
+  '/api/team': typeof ApiTeamRoute
   '/prontuario/$patientId': typeof ProntuarioPatientIdRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/measurements/$patientId': typeof ApiMeasurementsPatientIdRoute
+  '/api/patients/$patientId': typeof ApiPatientsPatientIdRoute
+  '/api/records/$patientId': typeof ApiRecordsPatientIdRouteWithChildren
+  '/api/records/$patientId/evolutions': typeof ApiRecordsPatientIdEvolutionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +161,21 @@ export interface FileRoutesByTo {
   '/equipe': typeof EquipeRoute
   '/paciente': typeof PacienteRoute
   '/perfil': typeof PerfilRoute
+  '/api/alerts': typeof ApiAlertsRoute
+  '/api/appointments': typeof ApiAppointmentsRoute
+  '/api/kpis': typeof ApiKpisRoute
+  '/api/measurements': typeof ApiMeasurementsRouteWithChildren
+  '/api/patients': typeof ApiPatientsRouteWithChildren
+  '/api/profile': typeof ApiProfileRoute
+  '/api/team': typeof ApiTeamRoute
   '/prontuario/$patientId': typeof ProntuarioPatientIdRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/measurements/$patientId': typeof ApiMeasurementsPatientIdRoute
+  '/api/patients/$patientId': typeof ApiPatientsPatientIdRoute
+  '/api/records/$patientId': typeof ApiRecordsPatientIdRouteWithChildren
+  '/api/records/$patientId/evolutions': typeof ApiRecordsPatientIdEvolutionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,7 +184,21 @@ export interface FileRoutesById {
   '/equipe': typeof EquipeRoute
   '/paciente': typeof PacienteRoute
   '/perfil': typeof PerfilRoute
+  '/api/alerts': typeof ApiAlertsRoute
+  '/api/appointments': typeof ApiAppointmentsRoute
+  '/api/kpis': typeof ApiKpisRoute
+  '/api/measurements': typeof ApiMeasurementsRouteWithChildren
+  '/api/patients': typeof ApiPatientsRouteWithChildren
+  '/api/profile': typeof ApiProfileRoute
+  '/api/team': typeof ApiTeamRoute
   '/prontuario/$patientId': typeof ProntuarioPatientIdRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/measurements/$patientId': typeof ApiMeasurementsPatientIdRoute
+  '/api/patients/$patientId': typeof ApiPatientsPatientIdRoute
+  '/api/records/$patientId': typeof ApiRecordsPatientIdRouteWithChildren
+  '/api/records/$patientId/evolutions': typeof ApiRecordsPatientIdEvolutionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -80,7 +208,21 @@ export interface FileRouteTypes {
     | '/equipe'
     | '/paciente'
     | '/perfil'
+    | '/api/alerts'
+    | '/api/appointments'
+    | '/api/kpis'
+    | '/api/measurements'
+    | '/api/patients'
+    | '/api/profile'
+    | '/api/team'
     | '/prontuario/$patientId'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/measurements/$patientId'
+    | '/api/patients/$patientId'
+    | '/api/records/$patientId'
+    | '/api/records/$patientId/evolutions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -88,7 +230,21 @@ export interface FileRouteTypes {
     | '/equipe'
     | '/paciente'
     | '/perfil'
+    | '/api/alerts'
+    | '/api/appointments'
+    | '/api/kpis'
+    | '/api/measurements'
+    | '/api/patients'
+    | '/api/profile'
+    | '/api/team'
     | '/prontuario/$patientId'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/measurements/$patientId'
+    | '/api/patients/$patientId'
+    | '/api/records/$patientId'
+    | '/api/records/$patientId/evolutions'
   id:
     | '__root__'
     | '/'
@@ -96,7 +252,21 @@ export interface FileRouteTypes {
     | '/equipe'
     | '/paciente'
     | '/perfil'
+    | '/api/alerts'
+    | '/api/appointments'
+    | '/api/kpis'
+    | '/api/measurements'
+    | '/api/patients'
+    | '/api/profile'
+    | '/api/team'
     | '/prontuario/$patientId'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/measurements/$patientId'
+    | '/api/patients/$patientId'
+    | '/api/records/$patientId'
+    | '/api/records/$patientId/evolutions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -105,7 +275,18 @@ export interface RootRouteChildren {
   EquipeRoute: typeof EquipeRoute
   PacienteRoute: typeof PacienteRoute
   PerfilRoute: typeof PerfilRoute
+  ApiAlertsRoute: typeof ApiAlertsRoute
+  ApiAppointmentsRoute: typeof ApiAppointmentsRoute
+  ApiKpisRoute: typeof ApiKpisRoute
+  ApiMeasurementsRoute: typeof ApiMeasurementsRouteWithChildren
+  ApiPatientsRoute: typeof ApiPatientsRouteWithChildren
+  ApiProfileRoute: typeof ApiProfileRoute
+  ApiTeamRoute: typeof ApiTeamRoute
   ProntuarioPatientIdRoute: typeof ProntuarioPatientIdRoute
+  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthMeRoute: typeof ApiAuthMeRoute
+  ApiRecordsPatientIdRoute: typeof ApiRecordsPatientIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -152,8 +333,141 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProntuarioPatientIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/team': {
+      id: '/api/team'
+      path: '/api/team'
+      fullPath: '/api/team'
+      preLoaderRoute: typeof ApiTeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/profile': {
+      id: '/api/profile'
+      path: '/api/profile'
+      fullPath: '/api/profile'
+      preLoaderRoute: typeof ApiProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/patients': {
+      id: '/api/patients'
+      path: '/api/patients'
+      fullPath: '/api/patients'
+      preLoaderRoute: typeof ApiPatientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/measurements': {
+      id: '/api/measurements'
+      path: '/api/measurements'
+      fullPath: '/api/measurements'
+      preLoaderRoute: typeof ApiMeasurementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/kpis': {
+      id: '/api/kpis'
+      path: '/api/kpis'
+      fullPath: '/api/kpis'
+      preLoaderRoute: typeof ApiKpisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/appointments': {
+      id: '/api/appointments'
+      path: '/api/appointments'
+      fullPath: '/api/appointments'
+      preLoaderRoute: typeof ApiAppointmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/alerts': {
+      id: '/api/alerts'
+      path: '/api/alerts'
+      fullPath: '/api/alerts'
+      preLoaderRoute: typeof ApiAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/records/$patientId': {
+      id: '/api/records/$patientId'
+      path: '/api/records/$patientId'
+      fullPath: '/api/records/$patientId'
+      preLoaderRoute: typeof ApiRecordsPatientIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/patients/$patientId': {
+      id: '/api/patients/$patientId'
+      path: '/$patientId'
+      fullPath: '/api/patients/$patientId'
+      preLoaderRoute: typeof ApiPatientsPatientIdRouteImport
+      parentRoute: typeof ApiPatientsRoute
+    }
+    '/api/measurements/$patientId': {
+      id: '/api/measurements/$patientId'
+      path: '/$patientId'
+      fullPath: '/api/measurements/$patientId'
+      preLoaderRoute: typeof ApiMeasurementsPatientIdRouteImport
+      parentRoute: typeof ApiMeasurementsRoute
+    }
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/login': {
+      id: '/api/auth/login'
+      path: '/api/auth/login'
+      fullPath: '/api/auth/login'
+      preLoaderRoute: typeof ApiAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/records/$patientId/evolutions': {
+      id: '/api/records/$patientId/evolutions'
+      path: '/evolutions'
+      fullPath: '/api/records/$patientId/evolutions'
+      preLoaderRoute: typeof ApiRecordsPatientIdEvolutionsRouteImport
+      parentRoute: typeof ApiRecordsPatientIdRoute
+    }
   }
 }
+
+interface ApiMeasurementsRouteChildren {
+  ApiMeasurementsPatientIdRoute: typeof ApiMeasurementsPatientIdRoute
+}
+
+const ApiMeasurementsRouteChildren: ApiMeasurementsRouteChildren = {
+  ApiMeasurementsPatientIdRoute: ApiMeasurementsPatientIdRoute,
+}
+
+const ApiMeasurementsRouteWithChildren = ApiMeasurementsRoute._addFileChildren(
+  ApiMeasurementsRouteChildren,
+)
+
+interface ApiPatientsRouteChildren {
+  ApiPatientsPatientIdRoute: typeof ApiPatientsPatientIdRoute
+}
+
+const ApiPatientsRouteChildren: ApiPatientsRouteChildren = {
+  ApiPatientsPatientIdRoute: ApiPatientsPatientIdRoute,
+}
+
+const ApiPatientsRouteWithChildren = ApiPatientsRoute._addFileChildren(
+  ApiPatientsRouteChildren,
+)
+
+interface ApiRecordsPatientIdRouteChildren {
+  ApiRecordsPatientIdEvolutionsRoute: typeof ApiRecordsPatientIdEvolutionsRoute
+}
+
+const ApiRecordsPatientIdRouteChildren: ApiRecordsPatientIdRouteChildren = {
+  ApiRecordsPatientIdEvolutionsRoute: ApiRecordsPatientIdEvolutionsRoute,
+}
+
+const ApiRecordsPatientIdRouteWithChildren =
+  ApiRecordsPatientIdRoute._addFileChildren(ApiRecordsPatientIdRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -161,7 +475,18 @@ const rootRouteChildren: RootRouteChildren = {
   EquipeRoute: EquipeRoute,
   PacienteRoute: PacienteRoute,
   PerfilRoute: PerfilRoute,
+  ApiAlertsRoute: ApiAlertsRoute,
+  ApiAppointmentsRoute: ApiAppointmentsRoute,
+  ApiKpisRoute: ApiKpisRoute,
+  ApiMeasurementsRoute: ApiMeasurementsRouteWithChildren,
+  ApiPatientsRoute: ApiPatientsRouteWithChildren,
+  ApiProfileRoute: ApiProfileRoute,
+  ApiTeamRoute: ApiTeamRoute,
   ProntuarioPatientIdRoute: ProntuarioPatientIdRoute,
+  ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthMeRoute: ApiAuthMeRoute,
+  ApiRecordsPatientIdRoute: ApiRecordsPatientIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

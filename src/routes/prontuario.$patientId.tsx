@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AppShell } from "@/components/AppShell";
 import { BiCard, RiskBadge } from "@/components/bi/Card";
@@ -22,7 +23,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { patients, patientLongitudinal, professionalFollowUp, type Patient } from "@/lib/mockData";
+import { apiClient } from "@/lib/api/client";
+import type { Patient } from "@/lib/api/types";
+import {
+  patients as mockPatients,
+  patientLongitudinal,
+  professionalFollowUp as mockProfessionalFollowUp,
+} from "@/lib/mockData";
 import {
   clinicalFormTemplates,
   cloneClinicalValues,
@@ -183,9 +190,20 @@ const appointmentHours = ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", 
 
 function PatientRecordPage() {
   const { patientId } = Route.useParams();
-  const sourcePatient = patients.find((p) => p.id === patientId) ?? patients[0];
-  const responsible = getProfessional(sourcePatient.id);
+  const recordQuery = useQuery({
+    queryKey: ["record", patientId],
+    queryFn: () => apiClient.getRecord(patientId),
+    retry: false,
+  });
+  const sourcePatient =
+    recordQuery.data?.patient ?? mockPatients.find((p) => p.id === patientId) ?? mockPatients[0];
+  const responsible = recordQuery.data?.record.responsibleName ?? getProfessional(sourcePatient.id);
   const latestWeight = getLatestWeight(sourcePatient.id);
+  const measurementsQuery = useQuery({
+    queryKey: ["measurements", sourcePatient.id],
+    queryFn: async () => (await apiClient.getMeasurements(sourcePatient.id)).measurements,
+    retry: false,
+  });
   const [clinicalForms, setClinicalForms] = useState<ClinicalFormsState>(() =>
     createPrefilledClinicalFormsState({
       ...sourcePatient,
@@ -283,7 +301,9 @@ function PatientRecordPage() {
     fe: Number(profileDraft.fe) || sourcePatient.fe,
     vo2: Number(profileDraft.vo2) || sourcePatient.vo2,
   };
-  const timeline = patientLongitudinal[sourcePatient.id] ?? patientLongitudinal["P-1042"];
+  const timeline = measurementsQuery.data?.length
+    ? measurementsQuery.data
+    : (patientLongitudinal[sourcePatient.id] ?? patientLongitudinal["P-1042"]);
   const availableForms = clinicalFormTemplates.filter(
     (template) => !deletedForms.includes(template.key),
   );
@@ -298,6 +318,7 @@ function PatientRecordPage() {
       nomeCompleto: patient.name,
       idadeCalculada: `${patient.age} anos`,
       responsavel: profileDraft.responsible,
+      resumoClinico: recordQuery.data?.record.summary ?? current.identificacao.resumoClinico ?? "",
     };
     current.exameFisico = {
       ...current.exameFisico,
@@ -315,7 +336,7 @@ function PatientRecordPage() {
       td6Vo2Max: profileDraft.vo2,
     };
     return current;
-  }, [clinicalForms, patient.age, patient.name, profileDraft, sourcePatient.id]);
+  }, [clinicalForms, patient.age, patient.name, profileDraft, recordQuery.data, sourcePatient.id]);
 
   function openProfileEdit() {
     setProfileWorkingDraft(profileDraft);
@@ -331,6 +352,20 @@ function PatientRecordPage() {
 
   function saveProfileDraft() {
     setProfileDraft(profileWorkingDraft);
+    void apiClient
+      .updatePatient(patient.id, {
+        name: profileWorkingDraft.name,
+        age: Number(profileWorkingDraft.age) || patient.age,
+        risk: profileWorkingDraft.risk,
+        hr: Number(profileWorkingDraft.hr) || patient.hr,
+        selfCare: Number(profileWorkingDraft.selfCare) || patient.selfCare,
+        adherence: Number(profileWorkingDraft.adherence) || patient.adherence,
+        bp: profileWorkingDraft.bp,
+        spo2: Number(profileWorkingDraft.spo2) || patient.spo2,
+        fe: Number(profileWorkingDraft.fe) || patient.fe,
+        vo2: Number(profileWorkingDraft.vo2) || patient.vo2,
+      })
+      .catch(() => undefined);
     setClinicalHistory((current) => ["Perfil e resumo do prontuário atualizados.", ...current]);
     setActionFeedback("Dados do prontuário atualizados.");
     setConfirmProfileSaveOpen(false);
@@ -431,6 +466,16 @@ function PatientRecordPage() {
       };
 
       setCalendarAppointments((current) => [...current, appointment]);
+      void apiClient
+        .createAppointment({
+          professionalId: "user-physician",
+          patientId: patient.id,
+          date: appointmentDate,
+          time: appointmentTime,
+          mode: appointmentMode.toLowerCase(),
+          note,
+        })
+        .catch(() => undefined);
       feedback = `Agenda de ${viewerProfessional}: ${appointmentMode.toLowerCase()} para ${
         patient.name
       } em ${formatBrazilianDate(appointmentDate)} às ${appointmentTime}. ${
@@ -448,6 +493,7 @@ function PatientRecordPage() {
 
     setActionFeedback(feedback);
     setClinicalHistory((current) => [feedback, ...current]);
+    void apiClient.addEvolution(patient.id, activeAction, feedback).catch(() => undefined);
     setActionNote("");
     setActiveAction(null);
   }
@@ -1413,8 +1459,9 @@ function getLatestWeight(patientId: string) {
 }
 
 function getProfessional(patientId: string) {
-  const index = patients.findIndex((patient: Patient) => patient.id === patientId);
-  return professionalFollowUp[Math.max(0, index) % professionalFollowUp.length].professional;
+  const index = mockPatients.findIndex((patient: Patient) => patient.id === patientId);
+  return mockProfessionalFollowUp[Math.max(0, index) % mockProfessionalFollowUp.length]
+    .professional;
 }
 
 function buildMonthCells(year: number, monthIndex: number) {

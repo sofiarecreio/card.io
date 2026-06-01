@@ -9,7 +9,11 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:migrate": "wrangler d1 execute fc-cardio --local --file=./migrations/0001_initial.sql",
+    "db:seed": "wrangler d1 execute fc-cardio --local --file=./scripts/seed.sql",
+    "db:migrate:remote": "wrangler d1 execute fc-cardio --remote --file=./migrations/0001_initial.sql",
+    "db:seed:remote": "wrangler d1 execute fc-cardio --remote --file=./scripts/seed.sql"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",

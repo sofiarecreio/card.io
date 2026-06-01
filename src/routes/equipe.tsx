@@ -1,8 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { BiCard, Kpi, RiskBadge } from "@/components/bi/Card";
-import { patients, patientLongitudinal, professionalFollowUp, type Patient } from "@/lib/mockData";
+import { apiClient } from "@/lib/api/client";
+import type { Patient, ProfessionalFollowUp } from "@/lib/api/types";
+import {
+  patients as mockPatients,
+  patientLongitudinal,
+  professionalFollowUp as mockProfessionalFollowUp,
+} from "@/lib/mockData";
 import {
   Bar,
   BarChart,
@@ -80,6 +87,20 @@ const riskDescriptions = {
 };
 
 function TeamDashboard() {
+  const patientsQuery = useQuery({
+    queryKey: ["patients"],
+    queryFn: async () => (await apiClient.listPatients()).patients,
+    retry: false,
+  });
+  const kpisQuery = useQuery({
+    queryKey: ["dashboard-kpis"],
+    queryFn: apiClient.getKpis,
+    retry: false,
+  });
+  const patients = patientsQuery.data?.length ? patientsQuery.data : mockPatients;
+  const professionalFollowUp = kpisQuery.data?.professionalFollowUp?.length
+    ? kpisQuery.data.professionalFollowUp
+    : mockProfessionalFollowUp;
   const [activePatient, setActivePatient] = useState<string>("P-1042");
   const [indicatorSearch, setIndicatorSearch] = useState("");
   const [activeIndicator, setActiveIndicator] = useState<IndicatorKey>("critical");
@@ -100,11 +121,12 @@ function TeamDashboard() {
         filters.response === "all" ||
         (filters.response === "stale" ? isStale(patient) : !isStale(patient));
       const matchesProfessional =
-        filters.professional === "all" || getProfessional(patient.id) === filters.professional;
+        filters.professional === "all" ||
+        getProfessional(patient.id, patients, professionalFollowUp) === filters.professional;
 
       return matchesSearch && matchesRisk && matchesResponse && matchesProfessional;
     });
-  }, [filters]);
+  }, [filters, patients, professionalFollowUp]);
 
   const selectedPatient = patients.find((p) => p.id === activePatient) ?? patients[0];
   const searchPool = filteredPatients.length ? filteredPatients : patients;
@@ -112,7 +134,14 @@ function TeamDashboard() {
     ? findBestPatient(indicatorSearch, searchPool)
     : selectedPatient;
   const patient = indicatorMatch ?? selectedPatient;
-  const timeline = getTimeline(patient.id, filters.period);
+  const measurementsQuery = useQuery({
+    queryKey: ["measurements", patient.id],
+    queryFn: async () => (await apiClient.getMeasurements(patient.id)).measurements,
+    retry: false,
+  });
+  const timeline = measurementsQuery.data?.length
+    ? measurementsQuery.data
+    : getTimeline(patient.id, filters.period);
   const attentionPatients = filteredPatients
     .filter((p) => p.risk === "high" || p.trend === "down" || p.selfCare < 60 || isStale(p))
     .sort((a, b) => priorityScore(b) - priorityScore(a));
@@ -219,6 +248,7 @@ function TeamDashboard() {
             </Link>
             <FilterBar
               filters={filters}
+              professionals={professionalFollowUp}
               onChange={updateFilter}
               onClear={() =>
                 setFilters({
@@ -296,7 +326,12 @@ function TeamDashboard() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-12">
-          <IndicatorPatientDetails details={indicatorDetails[activeIndicator]} />
+          <IndicatorPatientDetails
+            details={indicatorDetails[activeIndicator]}
+            getProfessionalName={(patientId) =>
+              getProfessional(patientId, patients, professionalFollowUp)
+            }
+          />
 
           <StalePatientsSection patients={stalePatients} />
 
@@ -316,7 +351,8 @@ function TeamDashboard() {
                     <div>
                       <div className="text-sm font-semibold">{p.name}</div>
                       <div className="text-[11px] text-muted-foreground">
-                        {p.id} · {p.lastResponse} · {getProfessional(p.id)}
+                        {p.id} · {p.lastResponse} ·{" "}
+                        {getProfessional(p.id, patients, professionalFollowUp)}
                       </div>
                     </div>
                     <RiskBadge risk={p.risk} />
@@ -414,7 +450,7 @@ function TeamDashboard() {
                         {p.lastResponse}
                       </td>
                       <td className="px-2 py-2.5 text-[11px] text-muted-foreground">
-                        {getProfessional(p.id)}
+                        {getProfessional(p.id, patients, professionalFollowUp)}
                       </td>
                       <td className="px-2 py-2.5">
                         {p.trend === "up" ? (
@@ -663,10 +699,12 @@ function TeamDashboard() {
 
 function FilterBar({
   filters,
+  professionals,
   onChange,
   onClear,
 }: {
   filters: DashboardFilters;
+  professionals: ProfessionalFollowUp[];
   onChange: <Key extends keyof DashboardFilters>(key: Key, value: DashboardFilters[Key]) => void;
   onClear: () => void;
 }) {
@@ -711,7 +749,7 @@ function FilterBar({
           className="h-9 rounded-xl border border-border bg-background px-3 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option value="all">Profissional: todos</option>
-          {professionalFollowUp.map((item) => (
+          {professionals.map((item) => (
             <option key={item.professional} value={item.professional}>
               {item.professional}
             </option>
@@ -731,8 +769,10 @@ function FilterBar({
 
 function IndicatorPatientDetails({
   details,
+  getProfessionalName,
 }: {
   details: { title: string; subtitle: string; patients: Patient[]; empty: string };
+  getProfessionalName: (patientId: string) => string;
 }) {
   return (
     <BiCard className="lg:col-span-12" title={details.title} subtitle={details.subtitle}>
@@ -748,7 +788,7 @@ function IndicatorPatientDetails({
               <div>
                 <div className="text-sm font-semibold">{patient.name}</div>
                 <div className="mt-0.5 text-[11px] text-muted-foreground">
-                  {patient.id} · {patient.lastResponse} · {getProfessional(patient.id)}
+                  {patient.id} · {patient.lastResponse} · {getProfessionalName(patient.id)}
                 </div>
               </div>
               <RiskBadge risk={patient.risk} />
@@ -916,9 +956,15 @@ function priorityScore(patient: Patient) {
   );
 }
 
-function getProfessional(patientId: string) {
+function getProfessional(
+  patientId: string,
+  patients: Patient[] = mockPatients,
+  professionalFollowUp: ProfessionalFollowUp[] = mockProfessionalFollowUp,
+) {
   const index = patients.findIndex((patient) => patient.id === patientId);
-  return professionalFollowUp[Math.max(0, index) % professionalFollowUp.length].professional;
+  return (
+    professionalFollowUp[Math.max(0, index) % professionalFollowUp.length]?.professional ?? "-"
+  );
 }
 
 function buildWorseningData(list: Patient[]) {

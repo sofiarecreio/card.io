@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { ArrowRight, Heart, LockKeyhole, ShieldCheck, Stethoscope } from "lucide-react";
+import { apiClient } from "@/lib/api/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -116,6 +118,26 @@ function LoginPortal() {
 }
 
 function AuthAccessCard() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await apiClient.login(email, password);
+      await navigate({ to: "/equipe" });
+    } catch {
+      setError("Nao foi possivel entrar. Confira o e-mail e a senha.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <section className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
       <div className="flex items-start gap-3">
@@ -132,10 +154,14 @@ function AuthAccessCard() {
         </div>
       </div>
 
-      <form className="mt-5 space-y-3" onSubmit={(event) => event.preventDefault()}>
+      <form className="mt-5 space-y-3" onSubmit={handleSubmit}>
         <label className="block text-sm font-medium">
           E-mail institucional
           <input
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            type="email"
+            required
             className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="nome@hospital.edu"
           />
@@ -145,19 +171,24 @@ function AuthAccessCard() {
           <div className="relative mt-1">
             <LockKeyhole className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               type="password"
+              required
               className="h-11 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="Digite sua senha"
             />
           </div>
         </label>
-        <Link
-          to="/equipe"
+        {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+        <button
+          type="submit"
+          disabled={isSubmitting}
           className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
         >
-          Entrar no dashboard
+          {isSubmitting ? "Entrando..." : "Entrar no dashboard"}
           <ArrowRight className="h-4 w-4" />
-        </Link>
+        </button>
       </form>
     </section>
   );
